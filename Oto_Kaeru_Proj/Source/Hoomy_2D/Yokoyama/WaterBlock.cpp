@@ -12,6 +12,7 @@ AWaterBlock::AWaterBlock(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	m_bMovable = true;
+	m_eBlockType = EBlockType::EWater;
 }
 
 

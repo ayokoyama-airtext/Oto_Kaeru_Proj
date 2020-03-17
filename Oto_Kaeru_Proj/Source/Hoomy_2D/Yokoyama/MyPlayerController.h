@@ -17,4 +17,8 @@ class HOOMY_2D_API AMyPlayerController : public APlayerController
 public:
 	virtual void BeginPlay() override;
 	
+protected:
+	virtual void SetupInputComponent() override;
+
+	void HandleClickEvent();
 };
