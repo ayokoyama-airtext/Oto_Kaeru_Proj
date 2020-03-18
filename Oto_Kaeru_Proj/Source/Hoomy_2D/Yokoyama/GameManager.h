@@ -34,10 +34,10 @@ struct FBlockInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int	col;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int row;
 };
 
@@ -91,14 +91,21 @@ public:
 	void LeftClickEvent();
 
 protected:
+	/* クリアしてるかを確認 */
+	void CheckClear();
+
+	/* ブロックを一つ一つ見ていく */
+	bool CheckBlock(int x, int y, int* map, bool bFirstCheck);
+
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UStringTable	*m_pStringTable;		//	ストリングテーブルへの参照
 	UPROPERTY(VisibleAnywhere)
 	FText		m_ftStageText;			//	ストリングテーブルから読み込んだデータを保持(デバッグ用に表示)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	INT			m_iCol;					//	ステージの行数
+	INT			m_iCol;					//	ステージの列数
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	INT			m_iRow;					//	ステージの列数
+	INT			m_iRow;					//	ステージの行数
 	UPROPERTY(VisibleAnywhere)
 	TArray<int>	m_StageArray;			//	ステージのデータ
 
@@ -111,6 +118,10 @@ protected:
 	FBlockInfo	m_StartBlock;			//	スタートブロック
 	UPROPERTY(VisibleAnywhere)
 	TArray<FBlockInfo>	m_GoalBlockArray;	//	ゴールブロック
+
+
+	UPROPERTY(VisibleAnywhere)
+	bool		m_bClearStage;			//	クリアしたかどうか
 
 
 	UPROPERTY(EditAnywhere)
