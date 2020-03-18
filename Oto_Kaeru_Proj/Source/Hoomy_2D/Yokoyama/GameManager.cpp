@@ -28,7 +28,7 @@ AGameManager* AGameManager::instance = nullptr;
 // Desc: Ctor
 //-------------------------------------------------------------
 AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
-	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false)
+	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_iGoalNum(0), m_iClearedGoalNum(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -42,6 +42,8 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 	TArray<FString>	BlockBPPathArray = {"",
 										"/Game/Working/Yokoyama/BP/WallBlockBP",
 										"/Game/Working/Yokoyama/BP/WaterBlockBP",
+										"/Game/Working/Yokoyama/BP/StartBlockBP",
+										"/Game/Working/Yokoyama/BP/GoalBlockBP",
 										};
 	for (int i = 1; i < (uint8)EBlockType::EMax; ++i)
 	{
@@ -57,6 +59,8 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 	TArray<FString>	BlockBPPathArray = {"",
 										"Blueprint'/Game/Working/Yokoyama/BP/WallBlockBP.WallBlockBP'",
 										"Blueprint'/Game/Working/Yokoyama/BP/WaterBlockBP.WaterBlockBP'",
+										"Blueprint'/Game/Working/Yokoyama/BP/StartBlockBP.StartBlockBP'",
+										"Blueprint'/Game/Working/Yokoyama/BP/GoalBlockBP.GoalBlockBP'",
 										 };
 	
 	for (int i = 1; i < (uint8)EBlockType::EMax; ++i)
@@ -134,6 +138,10 @@ void AGameManager::BeginPlay()
 				{
 					block_->SetPosition(row, col);
 					block_->SetParent(this);
+					if (blockID_ == (int)EBlockType::EGoal)
+					{
+						m_iGoalNum++;
+					}
 				}
 			}
 		}
