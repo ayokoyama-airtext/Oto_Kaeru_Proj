@@ -2,6 +2,7 @@
 
 
 #include "WallBlock.h"
+#include "GameManager.h"
 
 
 //-------------------------------------------------------------
@@ -12,6 +13,7 @@ AWallBlock::AWallBlock(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
 	m_bMovable = false;
+	m_eBlockType = EBlockType::EWall;
 }
 
 

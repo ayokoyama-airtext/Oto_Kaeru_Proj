@@ -4,8 +4,11 @@
 #include "GameManager.h"
 #include "Engine/Blueprint.h"
 #include "Engine/World.h"
+#include "Engine/GameEngine.h"
+#include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "ConstructorHelpers.h"
+#include "GameFramework/PlayerController.h"
 #include "StringTableCore.h"
 #include "StringTable.h"
 #include "Camera/CameraActor.h"
@@ -13,13 +16,19 @@
 #include "SuperBlock.h"
 #include "WallBlock.h"
 
+//-------------------------------------------------------------
+// Static Fields Init
+//-------------------------------------------------------------
+AGameManager* AGameManager::instance = nullptr;
+
+
 
 //-------------------------------------------------------------
 // Name: AGameManager()
 // Desc: Ctor
 //-------------------------------------------------------------
 AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
-	:Super(ObjectInitializer),m_iCol(0),m_iRow(0)
+	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -70,6 +79,11 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 void AGameManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (instance == nullptr)
+	{
+		instance = this;
+	}
 	
 	//	ストリングテーブルからステージデータを読み込む
 	if (m_pStringTable)
@@ -151,6 +165,22 @@ void AGameManager::BeginPlay()
 
 
 //-------------------------------------------------------------
+// Name: EndPlay()
+// Desc: ゲーム終了直前に呼ばれる処理
+//-------------------------------------------------------------
+void AGameManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (instance != nullptr)
+	{
+		instance = nullptr;
+	}
+}
+
+
+
+//-------------------------------------------------------------
 // Name: Tick()
 // Desc: 毎フレーム呼ばれる関数
 // Parm: DeltaTime / 前フレームからの経過時間
@@ -161,3 +191,99 @@ void AGameManager::Tick(float DeltaTime)
 
 }
 
+
+
+//-------------------------------------------------------------
+// Name: GetInstance()
+// Desc: instanceのポインタを返す。nullptrの時は検索を行う。
+//-------------------------------------------------------------
+AGameManager* AGameManager::GetInstance()
+{
+	if (instance == nullptr)
+	{
+		if (GEngine->GameViewport != nullptr)
+		{
+			UWorld* world = GEngine->GameViewport->GetWorld();
+			TSubclassOf<AGameManager> findClass = AGameManager::StaticClass();
+			TArray<AActor*> actors;
+
+			UGameplayStatics::GetAllActorsOfClass(world, findClass, actors);
+			if (actors.Num())
+			{
+				instance = Cast<AGameManager>(actors[0]);
+			}
+		}
+	}
+
+	return instance;
+}
+
+
+
+//-------------------------------------------------------------
+// Name: GetStageStatus()
+// Desc: 指定座標(Col, Row)のステージ配列の値を返す。範囲外の時は-1を返す
+//-------------------------------------------------------------
+int AGameManager::GetStageStatus(int col, int row) const
+{
+	int retVal = -1;
+
+	if (0 <= col && m_iCol > col && 0 <= row && m_iRow > row)
+	{
+		retVal = m_StageArray[row * m_iCol + col];
+	}
+
+	return retVal;
+}
+
+
+
+//-------------------------------------------------------------
+// Name: SetStageStatus()
+// Desc: 
+//-------------------------------------------------------------
+void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
+{
+	if (0 <= col && m_iCol > col && 0 <= row && m_iRow > row)
+	{
+		m_StageArray[row*m_iCol + col] = (int)bt;
+	}
+}
+
+
+
+//-------------------------------------------------------------
+// 入力で呼ばれる関数
+//-------------------------------------------------------------
+void AGameManager::LeftClickEvent()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Left Click!"));
+
+	APlayerController* pController = UGameplayStatics::GetPlayerController(this, 0);
+	if (pController)
+	{
+		FVector WorldPos, WorldVec;
+		pController->DeprojectMousePositionToWorld(WorldPos, WorldVec);
+
+		//	ブロック移動関連処理
+		if (!m_bBlockMoving)	//	移動中のブロックがなければ処理開始
+		{
+			if (0 <= WorldPos.X && (m_iCol * BLOCK_SIZE) >= WorldPos.X && 0 <= WorldPos.Z && (m_iRow * BLOCK_SIZE) >= WorldPos.Z)
+			{
+				FHitResult	TraceResult(ForceInit);
+				pController->GetHitResultUnderCursor(ECollisionChannel::ECC_WorldDynamic, false, TraceResult);
+				AActor* HitActor = TraceResult.GetActor();
+				if (HitActor)
+				{
+					ASuperBlock* HitBlock = Cast<ASuperBlock>(HitActor);
+					if (HitBlock)
+					{
+						HitBlock->Clicked(WorldPos.X, WorldPos.Z);
+					}
+				}
+
+			}
+		}
+	}
+
+}

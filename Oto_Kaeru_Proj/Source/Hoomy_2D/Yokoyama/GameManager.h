@@ -13,8 +13,8 @@
 // Macros
 //-------------------------------------------------------------
 #define	BLOCK_SIZE			128.0f
-#define BLOCK_Y_COORD		60.0f
-#define BLOCK_MOVE_TIME		1.0f
+#define BLOCK_Y_COORD		60.0f	//	Y座標は奥行のパラメータ
+#define BLOCK_MOVE_TIME		0.75f
 
 
 UENUM()
@@ -37,17 +37,43 @@ class HOOMY_2D_API AGameManager : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
+private:	
 	// Sets default values for this actor's properties
 	AGameManager(const FObjectInitializer& ObjectInitializer);
+	// Singleton
+	static AGameManager*	instance;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Called when the game ends
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	/* インスタンスを取得 */
+	UFUNCTION(BlueprintCallable)
+	static AGameManager* GetInstance();
+
+	/* ステージの状態を取得 */
+	UFUNCTION(BlueprintCallable)
+	int GetStageStatus(int col, int row) const;
+
+	/* ステージの状態を設定 */
+	UFUNCTION(BlueprintCallable)
+	void SetStageStatus(int col, int row, EBlockType bt);
+
+	/* ブロックが移動中かどうかを設定 */
+	UFUNCTION(BlueprintCallable)
+	void SetBlockMoving(bool bBlockMoving) { m_bBlockMoving = bBlockMoving; }
+
+	///////////////////
+	// 入力で呼ぶ関数
+	///////////////////
+	void LeftClickEvent();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -67,4 +93,7 @@ protected:
 	TArray<TSubclassOf<class ASuperBlock>>	m_BlocksRefArray;	//	ブロックアセットへの参照
 	UPROPERTY(VisibleAnywhere)
 	class ACameraActor*		m_pCamera;	//	ワールドのカメラ
+
+	UPROPERTY(VisibleAnywhere)
+	bool	m_bBlockMoving;		//	移動中のブロックがあるかどうか
 };
