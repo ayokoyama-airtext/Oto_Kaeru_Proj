@@ -36,8 +36,6 @@ AOtosama::AOtosama()
 	// Spriteコンポーネントでレプリケーションを有効にして、ネットワーク化されたときにアニメーションが表示させる
 	GetSprite()->SetIsReplicated(true);
 	bReplicates = true;
-
-	InWaterFlag = false;
 }
 
 void AOtosama::UpdateAnimation()
@@ -67,8 +65,6 @@ void AOtosama::InWater()
 {
 	GetSprite()->SetFlipbook(SwimmingAnimation);
 
-	if (InWaterFlag)
-		InWaterFlag = true;
 }
 
 void AOtosama::UpdateCharacter()

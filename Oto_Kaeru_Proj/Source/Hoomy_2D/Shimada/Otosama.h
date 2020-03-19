@@ -39,5 +39,4 @@ protected:
 public:
 	AOtosama();
 
-	bool InWaterFlag;
 };
