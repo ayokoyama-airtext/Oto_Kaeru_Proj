@@ -52,6 +52,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	int		m_iY;				//	Y座標(ステージ配列上の座標)
 
+
+	UPROPERTY(VisibleAnywhere)
+	int		m_iMoveDirX;		//	X移動方向(ステージ配列上の座標)
+	UPROPERTY(VisibleAnywhere)
+	int		m_iMoveDirY;		//	Y移動方向(ステージ配列上の座標)
 	UPROPERTY(VisibleAnywhere)
 	int		m_iDestX;			//	移動先目的X座標(ステージ配列上の座標)
 	UPROPERTY(VisibleAnywhere)
@@ -59,11 +64,17 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	float	m_fDestWorldX;		//	移動先目的X座標(ワールド上の座標)
 	UPROPERTY(VisibleAnywhere)
-	float	m_fDestWorldZ;		//	移動先目的Y座標(ワールド上の座標)
+	float	m_fDestWorldZ;		//	移動先目的Z座標(ワールド上の座標)
+	UPROPERTY(VisibleAnywhere)
+	float	m_fStartWorldX;		//	移動開始X座標(ワールド上の座標)
+	UPROPERTY(VisibleAnywhere)
+	float	m_fStartWorldZ;		//	移動開始Z座標(ワールド上の座標)
 	UPROPERTY(VisibleAnywhere)
 	bool	m_bMoving;			//	移動中かどうか
 	UPROPERTY(VisibleAnywhere)
 	float	m_fTimer;			//	移動用タイマー
+	UPROPERTY(VisibleAnywhere)
+	float	m_fMoveTime;		//	移動にかける時間
 
 	UPROPERTY(VisibleAnywhere)
 	class AGameManager*		m_pParent;	//	同じワールド内のGameManagerへの参照

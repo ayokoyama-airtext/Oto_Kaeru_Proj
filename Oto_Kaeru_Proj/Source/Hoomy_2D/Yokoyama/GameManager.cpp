@@ -28,7 +28,7 @@ AGameManager* AGameManager::instance = nullptr;
 // Desc: Ctor
 //-------------------------------------------------------------
 AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
-	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false)
+	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -42,6 +42,8 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 	TArray<FString>	BlockBPPathArray = {"",
 										"/Game/Working/Yokoyama/BP/WallBlockBP",
 										"/Game/Working/Yokoyama/BP/WaterBlockBP",
+										"/Game/Working/Yokoyama/BP/StartBlockBP",
+										"/Game/Working/Yokoyama/BP/GoalBlockBP",
 										};
 	for (int i = 1; i < (uint8)EBlockType::EMax; ++i)
 	{
@@ -57,6 +59,8 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 	TArray<FString>	BlockBPPathArray = {"",
 										"Blueprint'/Game/Working/Yokoyama/BP/WallBlockBP.WallBlockBP'",
 										"Blueprint'/Game/Working/Yokoyama/BP/WaterBlockBP.WaterBlockBP'",
+										"Blueprint'/Game/Working/Yokoyama/BP/StartBlockBP.StartBlockBP'",
+										"Blueprint'/Game/Working/Yokoyama/BP/GoalBlockBP.GoalBlockBP'",
 										 };
 	
 	for (int i = 1; i < (uint8)EBlockType::EMax; ++i)
@@ -96,8 +100,8 @@ void AGameManager::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *str_);
 
 		//	最初の2文字は行数と列数
-		m_iCol = *wchar_++ - L'0';
 		m_iRow = *wchar_++ - L'0';
+		m_iCol = *wchar_++ - L'0';
 		//	最後まで数字を見ていく
 		while (*wchar_ != L'\0')
 		{
@@ -114,8 +118,8 @@ void AGameManager::BeginPlay()
 	float width, height;
 	float x, y, z;
 
-	width = BLOCK_SIZE * m_iRow;
-	height = BLOCK_SIZE * m_iCol;
+	width = BLOCK_SIZE * m_iCol;
+	height = BLOCK_SIZE * m_iRow;
 	y = BLOCK_Y_COORD;
 
 	if (m_StageArray.Num())
@@ -125,15 +129,30 @@ void AGameManager::BeginPlay()
 			int blockID_ = m_StageArray[i];
 			if (blockID_ != 0)
 			{
-				int col = i / m_iCol;
-				int row = i % m_iRow;
-				x = row * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
-				z = height - (col * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+				int col = i % m_iCol;
+				int row = i / m_iRow;
+				x = col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+				z = height - (row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
 				ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
 				if (block_)
 				{
-					block_->SetPosition(row, col);
+					block_->SetPosition(col, row);
 					block_->SetParent(this);
+					if (blockID_ == (int)EBlockType::EGoal)
+					{
+						//	ゴールの情報を保持
+						m_iGoalNum++;
+						FBlockInfo bInfo;
+						bInfo.col = col; bInfo.row = row;
+						m_GoalBlockArray.Emplace(bInfo);
+						UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+					}
+					else if (blockID_ == (int)EBlockType::EStart)
+					{
+						//	スタートの情報を保持
+						m_StartBlock.col = col;
+						m_StartBlock.row = row;
+					}
 				}
 			}
 		}
@@ -189,6 +208,11 @@ void AGameManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!m_bClearStage)
+	{
+		CheckClear();
+	}
+	
 }
 
 
@@ -253,11 +277,82 @@ void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
 
 
 //-------------------------------------------------------------
+// Name: SetStageStatus()
+// Desc: 
+//-------------------------------------------------------------
+void AGameManager::CheckClear()
+{
+	if (m_iGoalNum == m_iClearedGoalNum)
+		return;
+
+	int count = 0;
+	for (auto goal : m_GoalBlockArray)
+	{
+		int *map = new int[m_iCol*m_iRow]();
+
+		if (CheckBlock(goal.col, goal.row, map, true))
+		{
+			count++;
+		}
+
+		delete[]map;
+	}
+	m_iClearedGoalNum = count;
+
+	if (m_iGoalNum == m_iClearedGoalNum)
+	{
+		m_bClearStage = true;
+		UE_LOG(LogTemp, Warning, TEXT("Stage Clear!"));
+	}
+
+}
+
+
+
+//-------------------------------------------------------------
+// Name: CheckBlock()
+// Desc: 
+//-------------------------------------------------------------
+bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
+{
+	if (x < 0 || x > m_iCol-1 || y < 0 || y > m_iRow-1 || map[x + m_iCol * y] != 0)
+		return false;
+
+	if (m_StageArray[x + m_iCol * y] == (int)EBlockType::EStart)
+		return true;
+
+	if (!bFirstCheck)
+	{
+	if (m_StageArray[x + m_iCol * y] != (int)EBlockType::EWater)
+		return false;
+	}
+
+
+	map[x + m_iCol * y] = 1;
+
+	if (CheckBlock(x + 1, y, map, false))
+		return true;
+	if (CheckBlock(x, y + 1, map, false))
+		return true;
+	if (CheckBlock(x - 1, y, map, false))
+		return true;
+	if (CheckBlock(x, y - 1, map, false))
+		return true;
+		
+	return false;
+}
+
+
+
+//-------------------------------------------------------------
 // 入力で呼ばれる関数
 //-------------------------------------------------------------
 void AGameManager::LeftClickEvent()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Left Click!"));
+
+	if (m_bClearStage)
+		return;
 
 	APlayerController* pController = UGameplayStatics::GetPlayerController(this, 0);
 	if (pController)

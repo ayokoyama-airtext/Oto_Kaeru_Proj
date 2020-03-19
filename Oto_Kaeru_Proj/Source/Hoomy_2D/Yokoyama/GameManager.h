@@ -14,7 +14,7 @@
 //-------------------------------------------------------------
 #define	BLOCK_SIZE			128.0f
 #define BLOCK_Y_COORD		60.0f	//	Y座標は奥行のパラメータ
-#define BLOCK_MOVE_TIME		0.75f
+#define BLOCK_MOVE_TIME		0.25f
 
 
 UENUM()
@@ -23,7 +23,22 @@ enum class EBlockType : uint8
 	EEmpty,
 	EWall,
 	EWater,
+	EStart,
+	EGoal,
 	EMax,
+};
+
+
+USTRUCT()
+struct FBlockInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere)
+	int	col;
+
+	UPROPERTY(VisibleAnywhere)
+	int row;
 };
 
 
@@ -76,19 +91,41 @@ public:
 	void LeftClickEvent();
 
 protected:
+	/* クリアしてるかを確認 */
+	void CheckClear();
+
+	/* ブロックを一つ一つ見ていく */
+	bool CheckBlock(int x, int y, int* map, bool bFirstCheck);
+
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UStringTable	*m_pStringTable;		//	ストリングテーブルへの参照
 	UPROPERTY(VisibleAnywhere)
 	FText		m_ftStageText;			//	ストリングテーブルから読み込んだデータを保持(デバッグ用に表示)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	INT			m_iCol;					//	ステージの行数
+	INT			m_iCol;					//	ステージの列数
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	INT			m_iRow;					//	ステージの列数
+	INT			m_iRow;					//	ステージの行数
 	UPROPERTY(VisibleAnywhere)
 	TArray<int>	m_StageArray;			//	ステージのデータ
+
+
+	UPROPERTY(VisibleAnywhere)
+	INT			m_iGoalNum;				//	ゴールの数
+	UPROPERTY(VisibleAnywhere)
+	INT			m_iClearedGoalNum;		//	条件を満たしたゴールの数
+	UPROPERTY(VisibleAnywhere)
+	FBlockInfo	m_StartBlock;			//	スタートブロック
+	UPROPERTY(VisibleAnywhere)
+	TArray<FBlockInfo>	m_GoalBlockArray;	//	ゴールブロック
+
+
+	UPROPERTY(VisibleAnywhere)
+	bool		m_bClearStage;			//	クリアしたかどうか
+
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APaperSpriteActor>	m_BGBPRef;			//	背景アセットへの参照
-
 	UPROPERTY(VisibleAnywhere)
 	TArray<TSubclassOf<class ASuperBlock>>	m_BlocksRefArray;	//	ブロックアセットへの参照
 	UPROPERTY(VisibleAnywhere)
