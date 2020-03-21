@@ -13,6 +13,7 @@
 #include "StringTable.h"
 #include "Camera/CameraActor.h"
 #include "Paper2D/Classes/PaperSpriteActor.h"
+#include "Paper2D/Classes/PaperFlipbookActor.h"
 #include "SuperBlock.h"
 #include "WallBlock.h"
 
@@ -42,33 +43,79 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 	TArray<FString>	BlockBPPathArray = {"",
 										"/Game/Working/Yokoyama/BP/WallBlockBP",
 										"/Game/Working/Yokoyama/BP/WaterBlockBP",
-										"/Game/Working/Yokoyama/BP/StartBlockBP",
-										"/Game/Working/Yokoyama/BP/GoalBlockBP",
 										};
-	for (int i = 1; i < (uint8)EBlockType::EMax; ++i)
+	FString TonosamaPath = "/Game/Working/Yokoyama/BP/ANotInFlipBook_BP";
+	FString TamagoPath = "/Game/Working/Yokoyama/BP/TamagoFlipbook_BP";
+	FString OtamaPath = "/Game/Working/Yokoyama/BP/OtamaFlipbook_BP";
+
+	for (int i = 1; i < (uint8)EBlockType::EStart; ++i)
 	{
-		static ConstructorHelpers::FClassFinder<ASuperBlock> BluePrintFile(*BlockBPPathArray[i]);
+		ConstructorHelpers::FClassFinder<ASuperBlock> BluePrintFile(*BlockBPPathArray[i]);
 		if (BluePrintFile.Class)
 		{
 			m_BlocksRefArray[i] = (UClass*)BluePrintFile.Class;
 		}
 	}
+	{
+		ConstructorHelpers::FClassFinder<UBlueprint> BluePrintFile(*TonosamaPath);
+		if (BluePrintFile.Class)
+		{
+			m_TonosamaRef = (UClass*)BluePrintFile.Class;
+		}
+	}
+	{
+		ConstructorHelpers::FClassFinder<UBlueprint> BluePrintFile(*TamagoPath);
+		if (BluePrintFile.Class)
+		{
+			m_TamagoRef = (UClass*)BluePrintFile.Class;
+		}
+	}
+	{
+		ConstructorHelpers::FClassFinder<UBlueprint> BluePrintFile(*OtamaPath);
+		if (BluePrintFile.Class)
+		{
+			m_OtamaRef = (UClass*)BluePrintFile.Class;
+		}
+	}
+
 #else
 	//	エディター
 	//	ブロック
 	TArray<FString>	BlockBPPathArray = {"",
 										"Blueprint'/Game/Working/Yokoyama/BP/WallBlockBP.WallBlockBP'",
 										"Blueprint'/Game/Working/Yokoyama/BP/WaterBlockBP.WaterBlockBP'",
-										"Blueprint'/Game/Working/Yokoyama/BP/StartBlockBP.StartBlockBP'",
-										"Blueprint'/Game/Working/Yokoyama/BP/GoalBlockBP.GoalBlockBP'",
 										 };
+	FString TonosamaPath = "Blueprint'/Game/Working/Yokoyama/BP/ANotInFlipBook_BP.ANotInFlipBook_BP'";
+	FString TamagoPath = "Blueprint'/Game/Working/Yokoyama/BP/TamagoFlipbook_BP.TamagoFlipbook_BP'";
+	FString OtamaPath = "Blueprint'/Game/Working/Yokoyama/BP/OtamaFlipbook_BP.OtamaFlipbook_BP'";
 	
-	for (int i = 1; i < (uint8)EBlockType::EMax; ++i)
+	for (int i = 1; i < (uint8)EBlockType::EStart; ++i)
 	{
 		ConstructorHelpers::FObjectFinder<UBlueprint> BluePrintFile(*BlockBPPathArray[i]);
 		if (BluePrintFile.Object)
 		{
 			m_BlocksRefArray[i] = (UClass*)BluePrintFile.Object->GeneratedClass;
+		}
+	}
+	{
+		ConstructorHelpers::FObjectFinder<UBlueprint> BluePrintFile(*TonosamaPath);
+		if (BluePrintFile.Object)
+		{
+			m_TonosamaRef = (UClass*)BluePrintFile.Object->GeneratedClass;
+		}
+	}
+	{
+		ConstructorHelpers::FObjectFinder<UBlueprint> BluePrintFile(*TamagoPath);
+		if (BluePrintFile.Object)
+		{
+			m_TamagoRef = (UClass*)BluePrintFile.Object->GeneratedClass;
+		}
+	}
+	{
+		ConstructorHelpers::FObjectFinder<UBlueprint> BluePrintFile(*OtamaPath);
+		if (BluePrintFile.Object)
+		{
+			m_OtamaRef = (UClass*)BluePrintFile.Object->GeneratedClass;
 		}
 	}
 #endif
@@ -133,27 +180,69 @@ void AGameManager::BeginPlay()
 				int row = i / m_iRow;
 				x = col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
 				z = height - (row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
-				ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
-				if (block_)
+				switch (blockID_)
 				{
-					block_->SetPosition(col, row);
-					block_->SetParent(this);
-					if (blockID_ == (int)EBlockType::EGoal)
+				case (int)EBlockType::EStart:
 					{
-						//	ゴールの情報を保持
-						m_iGoalNum++;
-						FBlockInfo bInfo;
-						bInfo.col = col; bInfo.row = row;
-						m_GoalBlockArray.Emplace(bInfo);
-						UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+						APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y, z), FRotator(0, 0, 0));
+						if (act_)
+						{
+							//	スタートの情報を保持
+							m_StartBlock.col = col;
+							m_StartBlock.row = row;
+						}
 					}
-					else if (blockID_ == (int)EBlockType::EStart)
+					break;
+				case (int)EBlockType::EGoal:
 					{
-						//	スタートの情報を保持
-						m_StartBlock.col = col;
-						m_StartBlock.row = row;
+						APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y, z), FRotator(0, 0, 0));
+						APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y, z), FRotator(0, 0, 0));
+						if (tamago_ && otama_)
+						{
+							//	ゴールの情報を保持
+							m_iGoalNum++;
+							FBlockInfo bInfo;
+							bInfo.col = col; bInfo.row = row;
+							bInfo.Tamago = tamago_;
+							bInfo.Otama = otama_;
+							bInfo.Otama->SetActorHiddenInGame(true);
+							m_GoalBlockArray.Emplace(bInfo);
+							UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+						}
 					}
+					break;
+				default:
+					{
+						ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
+						if (block_)
+						{
+							block_->SetPosition(col, row);
+							block_->SetParent(this);
+						}
+					}
+					break;
 				}
+				//ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
+				//if (block_)
+				//{
+				//	block_->SetPosition(col, row);
+				//	block_->SetParent(this);
+				//	if (blockID_ == (int)EBlockType::EGoal)
+				//	{
+				//		//	ゴールの情報を保持
+				//		m_iGoalNum++;
+				//		FBlockInfo bInfo;
+				//		bInfo.col = col; bInfo.row = row;
+				//		m_GoalBlockArray.Emplace(bInfo);
+				//		UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+				//	}
+				//	else if (blockID_ == (int)EBlockType::EStart)
+				//	{
+				//		//	スタートの情報を保持
+				//		m_StartBlock.col = col;
+				//		m_StartBlock.row = row;
+				//	}
+				//}
 			}
 		}
 	}
@@ -292,7 +381,20 @@ void AGameManager::CheckClear()
 
 		if (CheckBlock(goal.col, goal.row, map, true))
 		{
+			if (goal.Otama->bHidden)
+			{
+				goal.Tamago->SetActorHiddenInGame(true);
+				goal.Otama->SetActorHiddenInGame(false);
+			}
 			count++;
+		}
+		else
+		{
+			if (goal.Tamago->bHidden)
+			{
+				goal.Tamago->SetActorHiddenInGame(false);
+				goal.Otama->SetActorHiddenInGame(true);
+			}
 		}
 
 		delete[]map;

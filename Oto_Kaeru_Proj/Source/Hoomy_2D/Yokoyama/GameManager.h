@@ -39,6 +39,12 @@ struct FBlockInfo
 
 	UPROPERTY(VisibleAnywhere)
 	int row;
+
+	UPROPERTY(VisibleAnywhere)
+	class APaperFlipbookActor*	Tamago;
+
+	UPROPERTY(VisibleAnywhere)
+	class APaperFlipbookActor*	Otama;
 };
 
 
@@ -128,6 +134,12 @@ protected:
 	TSubclassOf<class APaperSpriteActor>	m_BGBPRef;			//	背景アセットへの参照
 	UPROPERTY(VisibleAnywhere)
 	TArray<TSubclassOf<class ASuperBlock>>	m_BlocksRefArray;	//	ブロックアセットへの参照
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<class APaperFlipbookActor>	m_TonosamaRef;	//	とのさまアセットへの参照
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<class APaperFlipbookActor>	m_TamagoRef;	//	たまごアセットへの参照
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<class APaperFlipbookActor>	m_OtamaRef;		//	おたまアセットへの参照
 	UPROPERTY(VisibleAnywhere)
 	class ACameraActor*		m_pCamera;	//	ワールドのカメラ
 
