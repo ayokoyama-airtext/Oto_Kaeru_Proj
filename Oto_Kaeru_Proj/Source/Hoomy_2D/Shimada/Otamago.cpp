@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Otosama.h"
+#include "Otamago.h"
 #include "PaperFlipbookComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -9,7 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 
-AOtosama::AOtosama()
+AOtamago::AOtamago()
 {
 	// もし移動させるときヨーが移動しないように
 	bUseControllerRotationPitch = false;
@@ -24,7 +24,7 @@ AOtosama::AOtosama()
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	// 設定
-	GetCharacterMovement()->GravityScale = 3.0f;
+	GetCharacterMovement()->GravityScale = 0.0f;
 
 	// キャラの動きをXZにロック
 	GetCharacterMovement()->bConstrainToPlane = true;
@@ -38,13 +38,13 @@ AOtosama::AOtosama()
 	bReplicates = true;
 }
 
-void AOtosama::UpdateAnimation()
+void AOtamago::UpdateAnimation()
 {
 	const FVector PlayerVelocity = GetVelocity();
 	const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
 
 	// 状態をNotSwimにする
-	UPaperFlipbook* DesiredAnimation = (PlayerSpeedSqr > 0.0f) ? NotSwimmingAnimation : SwimmingAnimation;
+	UPaperFlipbook* DesiredAnimation = (PlayerSpeedSqr > 0.0f) ? OtamagoAnimation : OtamaAnimation;
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
 	{
 		GetSprite()->SetFlipbook(DesiredAnimation);
@@ -54,20 +54,20 @@ void AOtosama::UpdateAnimation()
 /*
 * @brief 毎フレーム処理
 */
-void AOtosama::Tick(float DeltaSeconds)
+void AOtamago::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
 	UpdateCharacter();
 }
 
-void AOtosama::InWater()
+void AOtamago::Otama()
 {
-	GetSprite()->SetFlipbook(SwimmingAnimation);
+	GetSprite()->SetFlipbook(OtamaAnimation);
 
 }
 
-void AOtosama::UpdateCharacter()
+void AOtamago::UpdateCharacter()
 {
 	//! アニメーション切替
 	UpdateAnimation();
