@@ -15,6 +15,7 @@
 #define	BLOCK_SIZE			128.0f
 #define BLOCK_Y_COORD		60.0f	//	Y座標は奥行のパラメータ
 #define BLOCK_MOVE_TIME		0.25f
+#define CAMERA_Y_COORD		1100.0f
 
 
 UENUM()
@@ -87,9 +88,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetStageStatus(int col, int row, EBlockType bt);
 
+	/* ブロックの参照を設定 */
+	UFUNCTION(BlueprintCallable)
+	void SetBlockStatus(int col, int row, class ASuperBlock* pBlock);
+
 	/* ブロックが移動中かどうかを設定 */
 	UFUNCTION(BlueprintCallable)
 	void SetBlockMoving(bool bBlockMoving) { m_bBlockMoving = bBlockMoving; }
+
+	/* クリック回数を増やす */
+	UFUNCTION(BlueprintCallable)
+	void IncreaseClickCount() { m_iClickCount++; }
 
 	///////////////////
 	// 入力で呼ぶ関数
@@ -113,7 +122,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	INT			m_iRow;					//	ステージの行数
 	UPROPERTY(VisibleAnywhere)
+	float		m_fWidth;				//	ステージ幅
+	UPROPERTY(VisibleAnywhere)
+	float		m_fHeight;				//	ステージ高さ
+	UPROPERTY(VisibleAnywhere)
 	TArray<int>	m_StageArray;			//	ステージのデータ
+	UPROPERTY(VisibleAnywhere)
+	TArray<class ASuperBlock*>	m_BlockArray;	//	スポーンしたブロックへの参照配列
 
 
 	UPROPERTY(VisibleAnywhere)
@@ -127,7 +142,13 @@ protected:
 
 
 	UPROPERTY(VisibleAnywhere)
+	INT			m_iMaxClickNum;			//	このステージでクリックできる数
+	UPROPERTY(VisibleAnywhere)
+	INT			m_iClickCount;			//	現在のクリック数
+	UPROPERTY(VisibleAnywhere)
 	bool		m_bClearStage;			//	クリアしたかどうか
+	UPROPERTY(VisibleAnywhere)
+	bool		m_bGameOver;			//	ゲームオーバーしたかどうか
 
 
 	UPROPERTY(EditAnywhere)

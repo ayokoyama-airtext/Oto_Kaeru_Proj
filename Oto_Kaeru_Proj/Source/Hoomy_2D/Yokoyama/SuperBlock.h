@@ -10,6 +10,62 @@
 #include "GameManager.h"
 #include "SuperBlock.generated.h"
 
+//-------------------------------------------------------------
+// Macros
+//-------------------------------------------------------------
+USTRUCT()
+struct FBlockMoveInfo
+{
+	GENERATED_BODY()
+
+protected:
+	UPROPERTY(VisibleAnywhere)
+		bool bMoveVertical;
+
+	UPROPERTY(VisibleAnywhere)
+		bool bMoveHorizontal;
+
+	UPROPERTY(VisibleAnywhere)
+		int	iMoveDirX;
+
+	UPROPERTY(VisibleAnywhere)
+		int iMoveDirY;
+
+public:
+		void Init(int characode) {
+		switch (characode)
+		{
+		case L'u':
+			bMoveVertical = true;		iMoveDirY = -1;
+			bMoveHorizontal = false;	iMoveDirX = 0;
+			break;
+		case L'd':
+			bMoveVertical = true;		iMoveDirY = 1;
+			bMoveHorizontal = false;	iMoveDirX = 0;
+			break;
+		case L'r':
+			bMoveVertical = false;		iMoveDirY = 0;
+			bMoveHorizontal = true;		iMoveDirX = 1;
+			break;
+		case L'l':
+			bMoveVertical = false;		iMoveDirY = 0;
+			bMoveHorizontal = true;		iMoveDirX = -1;
+			break;
+		default:
+			break;
+		}
+	}
+		bool IsMovingVertical() const { return bMoveVertical; }
+		bool IsMovingHorizontal() const { return bMoveHorizontal; }
+		int GetMoveDirX() const { return iMoveDirX; }
+		int GetMoveDirY() const { return iMoveDirY; }
+		void ReverseMoveDir() {
+		iMoveDirX = (bMoveHorizontal) ? iMoveDirX * -1 : 0;
+		iMoveDirY = (bMoveVertical) ? iMoveDirY * -1 : 0;
+	}
+};
+
+
 
 
 //-------------------------------------------------------------
@@ -39,8 +95,18 @@ public:
 	virtual void SetPosition(int x, int y) { m_iX = x; m_iY = y; }
 	/* 親を設定 */
 	virtual void SetParent(class AGameManager* pParent) { m_pParent = pParent; }
+	/* 移動情報を設定 */
+	virtual void SetMoveInfo(int charaCode) { if (m_bMovable) m_MoveInfo.Init(charaCode); }
 	/* クリックされた時に呼ぶ関数 */
 	virtual void Clicked(float mouseX, float mouseZ);
+
+	//
+	//	カーソルオーバーイベントに登録
+	//
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginCursorOver(UPrimitiveComponent* TouchedComponent);
+	UFUNCTION(BlueprintCallable)
+	virtual void EndCursorOver(UPrimitiveComponent* TouchedComponent);
 
 protected:
 	/* 点が矩形内にあるか判定する */
@@ -51,6 +117,9 @@ protected:
 	int		m_iX;				//	X座標(ステージ配列上の座標)
 	UPROPERTY(VisibleAnywhere)
 	int		m_iY;				//	Y座標(ステージ配列上の座標)
+
+	UPROPERTY(VisibleAnywhere)
+	FBlockMoveInfo	m_MoveInfo;
 
 
 	UPROPERTY(VisibleAnywhere)
@@ -84,4 +153,8 @@ protected:
 	bool	m_bMovable;			//	移動可能ブロックかどうか
 	UPROPERTY(VisibleAnywhere)
 	EBlockType	m_eBlockType;	//	このブロックのタイプ
+
+	//	矢印のアクタ
+	UPROPERTY(VisibleAnywhere)
+	APaperSpriteActor*		m_pChildArrowActor;
 };

@@ -29,7 +29,7 @@ AGameManager* AGameManager::instance = nullptr;
 // Desc: Ctor
 //-------------------------------------------------------------
 AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
-	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false)
+	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -149,6 +149,23 @@ void AGameManager::BeginPlay()
 		//	最初の2文字は行数と列数
 		m_iRow = *wchar_++ - L'0';
 		m_iCol = *wchar_++ - L'0';
+		//	クリック回数のチェック
+		m_iMaxClickNum += (*wchar_++ - L'0') * 10;
+		m_iMaxClickNum += (*wchar_++ - L'0');
+
+
+		//	ブロックをスポーンさせる
+		float width, height;
+		float x, y, z;
+
+		width = BLOCK_SIZE * m_iCol;
+		height = BLOCK_SIZE * m_iRow;
+		y = BLOCK_Y_COORD;
+
+		m_BlockArray.Init(nullptr, m_iCol*m_iRow);
+		m_fWidth = width;
+		m_fHeight = height;
+
 		//	最後まで数字を見ていく
 		while (*wchar_ != L'\0')
 		{
@@ -156,97 +173,178 @@ void AGameManager::BeginPlay()
 			if (L'0' <= c_ && c_ <= L'9')
 			{
 				m_StageArray.Emplace(c_ - L'0');
+				int i = m_StageArray.Num() - 1;
+				int blockID_ = c_ - L'0';
+				if (blockID_ != 0)
+				{
+					int col = i % m_iCol;
+					int row = i / m_iRow;
+					x = col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+					z = height - (row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+					switch (blockID_)
+					{
+						case (int)EBlockType::EEmpty:
+							break;
+						case (int)EBlockType::EStart:
+						{
+							APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y, z), FRotator(0, 0, 0));
+							if (act_)
+							{
+								//	スタートの情報を保持
+								m_StartBlock.col = col;
+								m_StartBlock.row = row;
+							}
+						}
+						break;
+						case (int)EBlockType::EGoal:
+						{
+							APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y, z), FRotator(0, 0, 0));
+							APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y, z), FRotator(0, 0, 0));
+							if (tamago_ && otama_)
+							{
+								//	ゴールの情報を保持
+								m_iGoalNum++;
+								FBlockInfo bInfo;
+								bInfo.col = col; bInfo.row = row;
+								bInfo.Tamago = tamago_;
+								bInfo.Otama = otama_;
+								bInfo.Otama->SetActorHiddenInGame(true);
+								m_GoalBlockArray.Emplace(bInfo);
+								UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+							}
+						}
+						break;
+						default:
+						{
+							ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
+							if (block_)
+							{
+								m_BlockArray[i] = block_;
+								block_->SetPosition(col, row);
+								block_->SetParent(this);
+								block_->SetMoveInfo(*(wchar_ + 1));
+							}
+						}
+						break;
+					}
+					//ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
+					//if (block_)
+					//{
+					//	block_->SetPosition(col, row);
+					//	block_->SetParent(this);
+					//	if (blockID_ == (int)EBlockType::EGoal)
+					//	{
+					//		//	ゴールの情報を保持
+					//		m_iGoalNum++;
+					//		FBlockInfo bInfo;
+					//		bInfo.col = col; bInfo.row = row;
+					//		m_GoalBlockArray.Emplace(bInfo);
+					//		UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+					//	}
+					//	else if (blockID_ == (int)EBlockType::EStart)
+					//	{
+					//		//	スタートの情報を保持
+					//		m_StartBlock.col = col;
+					//		m_StartBlock.row = row;
+					//	}
+					//}
+				}
+
 			}
 			wchar_++;
 		}
 	}
 
-	//	ブロックをスポーンさせる
-	float width, height;
-	float x, y, z;
-
-	width = BLOCK_SIZE * m_iCol;
-	height = BLOCK_SIZE * m_iRow;
-	y = BLOCK_Y_COORD;
-
-	if (m_StageArray.Num())
-	{
-		for (int i = 0; i < m_StageArray.Num(); ++i)
-		{
-			int blockID_ = m_StageArray[i];
-			if (blockID_ != 0)
-			{
-				int col = i % m_iCol;
-				int row = i / m_iRow;
-				x = col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
-				z = height - (row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
-				switch (blockID_)
-				{
-				case (int)EBlockType::EStart:
-					{
-						APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y, z), FRotator(0, 0, 0));
-						if (act_)
-						{
-							//	スタートの情報を保持
-							m_StartBlock.col = col;
-							m_StartBlock.row = row;
-						}
-					}
-					break;
-				case (int)EBlockType::EGoal:
-					{
-						APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y, z), FRotator(0, 0, 0));
-						APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y, z), FRotator(0, 0, 0));
-						if (tamago_ && otama_)
-						{
-							//	ゴールの情報を保持
-							m_iGoalNum++;
-							FBlockInfo bInfo;
-							bInfo.col = col; bInfo.row = row;
-							bInfo.Tamago = tamago_;
-							bInfo.Otama = otama_;
-							bInfo.Otama->SetActorHiddenInGame(true);
-							m_GoalBlockArray.Emplace(bInfo);
-							UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
-						}
-					}
-					break;
-				default:
-					{
-						ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
-						if (block_)
-						{
-							block_->SetPosition(col, row);
-							block_->SetParent(this);
-						}
-					}
-					break;
-				}
-				//ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
-				//if (block_)
-				//{
-				//	block_->SetPosition(col, row);
-				//	block_->SetParent(this);
-				//	if (blockID_ == (int)EBlockType::EGoal)
-				//	{
-				//		//	ゴールの情報を保持
-				//		m_iGoalNum++;
-				//		FBlockInfo bInfo;
-				//		bInfo.col = col; bInfo.row = row;
-				//		m_GoalBlockArray.Emplace(bInfo);
-				//		UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
-				//	}
-				//	else if (blockID_ == (int)EBlockType::EStart)
-				//	{
-				//		//	スタートの情報を保持
-				//		m_StartBlock.col = col;
-				//		m_StartBlock.row = row;
-				//	}
-				//}
-			}
-		}
-	}
-
+	////	ブロックをスポーンさせる
+	//float width, height;
+	//float x, y, z;
+	//width = BLOCK_SIZE * m_iCol;
+	//height = BLOCK_SIZE * m_iRow;
+	//y = BLOCK_Y_COORD;
+	//m_BlockArray.Init(nullptr, m_iCol*m_iRow);
+	//m_fWidth = width;
+	//m_fHeight = height;
+	//if (m_StageArray.Num())
+	//{
+	//	for (int i = 0; i < m_StageArray.Num(); ++i)
+	//	{
+	//		int blockID_ = m_StageArray[i];
+	//		if (blockID_ != 0)
+	//		{
+	//			int col = i % m_iCol;
+	//			int row = i / m_iRow;
+	//			x = col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+	//			z = height - (row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+	//			switch (blockID_)
+	//			{
+	//			case (int)EBlockType::EEmpty:
+	//				break;
+	//			case (int)EBlockType::EStart:
+	//				{
+	//					APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y, z), FRotator(0, 0, 0));
+	//					if (act_)
+	//					{
+	//						//	スタートの情報を保持
+	//						m_StartBlock.col = col;
+	//						m_StartBlock.row = row;
+	//					}
+	//				}
+	//				break;
+	//			case (int)EBlockType::EGoal:
+	//				{
+	//					APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y, z), FRotator(0, 0, 0));
+	//					APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y, z), FRotator(0, 0, 0));
+	//					if (tamago_ && otama_)
+	//					{
+	//						//	ゴールの情報を保持
+	//						m_iGoalNum++;
+	//						FBlockInfo bInfo;
+	//						bInfo.col = col; bInfo.row = row;
+	//						bInfo.Tamago = tamago_;
+	//						bInfo.Otama = otama_;
+	//						bInfo.Otama->SetActorHiddenInGame(true);
+	//						m_GoalBlockArray.Emplace(bInfo);
+	//						UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+	//					}
+	//				}
+	//				break;
+	//			default:
+	//				{
+	//					ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
+	//					if (block_)
+	//					{
+	//						m_BlockArray[i] = block_;
+	//						block_->SetPosition(col, row);
+	//						block_->SetParent(this);
+	//					}
+	//				}
+	//				break;
+	//			}
+	//			//ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
+	//			//if (block_)
+	//			//{
+	//			//	block_->SetPosition(col, row);
+	//			//	block_->SetParent(this);
+	//			//	if (blockID_ == (int)EBlockType::EGoal)
+	//			//	{
+	//			//		//	ゴールの情報を保持
+	//			//		m_iGoalNum++;
+	//			//		FBlockInfo bInfo;
+	//			//		bInfo.col = col; bInfo.row = row;
+	//			//		m_GoalBlockArray.Emplace(bInfo);
+	//			//		UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+	//			//	}
+	//			//	else if (blockID_ == (int)EBlockType::EStart)
+	//			//	{
+	//			//		//	スタートの情報を保持
+	//			//		m_StartBlock.col = col;
+	//			//		m_StartBlock.row = row;
+	//			//	}
+	//			//}
+	//		}
+	//	}
+	//}
+	
 	//	ワールド内のカメラを検索して配置
 	TSubclassOf<ACameraActor> findClass;
 	findClass = ACameraActor::StaticClass();
@@ -255,14 +353,14 @@ void AGameManager::BeginPlay()
 	if (actorsArray.Num())
 	{
 		m_pCamera = Cast<ACameraActor>(actorsArray[0]);
-		m_pCamera->SetActorLocation(FVector(width * 0.5f, 120.f, height * 0.5f));
+		m_pCamera->SetActorLocation(FVector(m_fWidth * 0.5f, CAMERA_Y_COORD, m_fHeight * 0.5f));
 	}
 
 	//	背景を配置
 	{
 		if (m_BGBPRef)
 		{
-			APaperSpriteActor* bg_ = GetWorld()->SpawnActor<APaperSpriteActor>(m_BGBPRef, FVector(width *0.5f, 0, height * 0.5f), FRotator(0, 0, 0));
+			APaperSpriteActor* bg_ = GetWorld()->SpawnActor<APaperSpriteActor>(m_BGBPRef, FVector(m_fWidth *0.5f, 0, m_fHeight * 0.5f), FRotator(0, 0, 0));
 		}
 	}
 
@@ -297,9 +395,20 @@ void AGameManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!m_bClearStage)
+	//	クリア&ゲームオーバーチェック
+	if (!m_bClearStage && !m_bGameOver)
 	{
 		CheckClear();
+	}
+
+	//	ゲームオーバーチェック
+	if (!m_bClearStage && !m_bGameOver)
+	{
+		if (m_iClickCount > m_iMaxClickNum)
+		{
+			m_bGameOver = true;
+			UE_LOG(LogTemp, Warning, TEXT("GameOver!"));
+		}
 	}
 	
 }
@@ -367,6 +476,20 @@ void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
 
 //-------------------------------------------------------------
 // Name: SetStageStatus()
+// Desc: 
+//-------------------------------------------------------------
+void AGameManager::SetBlockStatus(int col, int row, ASuperBlock* pBlock)
+{
+	if (0 <= col && m_iCol > col && 0 <= row && m_iRow > row)
+	{
+		m_BlockArray[row*m_iCol + col] = pBlock;
+	}
+}
+
+
+
+//-------------------------------------------------------------
+// Name: CheckClear()
 // Desc: 
 //-------------------------------------------------------------
 void AGameManager::CheckClear()
@@ -453,30 +576,33 @@ void AGameManager::LeftClickEvent()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Left Click!"));
 
-	if (m_bClearStage)
+	if (m_bClearStage || m_bGameOver)
 		return;
 
 	APlayerController* pController = UGameplayStatics::GetPlayerController(this, 0);
 	if (pController)
 	{
+		//	マウスの座標をスクリーン座標からワールド座標に変換
 		FVector WorldPos, WorldVec;
 		pController->DeprojectMousePositionToWorld(WorldPos, WorldVec);
+		UE_LOG(LogTemp, Warning, TEXT("Cursor Pos X:%.2f Y:%.2f Z:%.2f"), WorldPos.X, WorldPos.Y, WorldPos.Z);
 
 		//	ブロック移動関連処理
 		if (!m_bBlockMoving)	//	移動中のブロックがなければ処理開始
 		{
-			if (0 <= WorldPos.X && (m_iCol * BLOCK_SIZE) >= WorldPos.X && 0 <= WorldPos.Z && (m_iRow * BLOCK_SIZE) >= WorldPos.Z)
+			//	ブロックが置いてある面との交点座標を計算
+			FVector ClickPos = FMath::LinePlaneIntersection(WorldPos, WorldPos + 10000.0f * WorldVec, FVector(0, BLOCK_Y_COORD, 0), FVector(0, 1, 0));
+			UE_LOG(LogTemp, Warning, TEXT("Click Pos X:%.2f Y:%.2f Z:%.2f"), ClickPos.X, ClickPos.Y, ClickPos.Z);
+
+			if (0 <= ClickPos.X && (m_fWidth) >= ClickPos.X && 0 <= ClickPos.Z && (m_fHeight) >= ClickPos.Z)
 			{
-				FHitResult	TraceResult(ForceInit);
-				pController->GetHitResultUnderCursor(ECollisionChannel::ECC_WorldDynamic, false, TraceResult);
-				AActor* HitActor = TraceResult.GetActor();
-				if (HitActor)
+				//	座標から配列添え字番号を計算
+				int col_ = (int)ClickPos.X / (int)BLOCK_SIZE, row_ = (int)(m_fHeight - ClickPos.Z) / (int)BLOCK_SIZE;
+				int index_ = col_ + m_iCol * row_;
+				if (m_BlockArray[index_])
 				{
-					ASuperBlock* HitBlock = Cast<ASuperBlock>(HitActor);
-					if (HitBlock)
-					{
-						HitBlock->Clicked(WorldPos.X, WorldPos.Z);
-					}
+					//	ブロックにクリックされたことを伝える
+					m_BlockArray[index_]->Clicked(ClickPos.X, ClickPos.Z);
 				}
 
 			}

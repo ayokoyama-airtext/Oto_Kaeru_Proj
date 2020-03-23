@@ -11,7 +11,7 @@
 // Desc: Ctor
 //-------------------------------------------------------------
 ASuperBlock::ASuperBlock(const FObjectInitializer& ObjectInitializer)
-	:Super(ObjectInitializer), m_iX(0), m_iY(0), m_pParent(nullptr), m_fDestWorldX(0), m_fDestWorldZ(0), m_bMoving(false), m_fTimer(0), m_iMoveDirX(0), m_iMoveDirY(0), m_fMoveTime(BLOCK_MOVE_TIME), m_fStartWorldX(0), m_fStartWorldZ(0)
+	:Super(ObjectInitializer), m_iX(0), m_iY(0), m_pParent(nullptr), m_fDestWorldX(0), m_fDestWorldZ(0), m_bMoving(false), m_fTimer(0), m_iMoveDirX(0), m_iMoveDirY(0), m_fMoveTime(BLOCK_MOVE_TIME), m_fStartWorldX(0), m_fStartWorldZ(0), m_pChildArrowActor(nullptr)
 {
 	UPaperSpriteComponent* pRenderComp = GetRenderComponent();
 	if (pRenderComp != NULL)
@@ -22,6 +22,7 @@ ASuperBlock::ASuperBlock(const FObjectInitializer& ObjectInitializer)
 	{
 		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	}
+
 
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -48,6 +49,27 @@ void ASuperBlock::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (m_bMovable)
+	{
+		UPaperSpriteComponent* pRenderComp = GetRenderComponent();
+		pRenderComp->OnBeginCursorOver.AddDynamic(this, &ASuperBlock::BeginCursorOver);
+		pRenderComp->OnEndCursorOver.AddDynamic(this, &ASuperBlock::EndCursorOver);
+
+		FString path_ = "/Game/Working/Yokoyama/BP/Test_Arrow_BP.Test_Arrow_BP_C";
+		TSubclassOf<class APaperSpriteActor> sc = TSoftClassPtr<APaperSpriteActor>(FSoftObjectPath(*path_)).LoadSynchronous();	//	クラスの取得
+		if (sc != nullptr)
+		{
+			APaperSpriteActor* child_ = GetWorld()->SpawnActor<APaperSpriteActor>(sc);
+			if (child_)
+			{
+				child_->SetActorRotation(FRotator(0, 0, 0));
+				child_->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+				m_pChildArrowActor = child_;
+				m_pChildArrowActor->SetActorRelativeLocation(FVector(0, -5.f, 0));
+				m_pChildArrowActor->SetActorHiddenInGame(true);
+			}
+		}
+	}
 }
 
 
@@ -98,9 +120,17 @@ void ASuperBlock::Tick(float DeltaTime)
 		{
 			m_fTimer = 0;
 			m_pParent->SetStageStatus(m_iX, m_iY, EBlockType::EEmpty);	//	前の位置を空にする
+			m_pParent->SetBlockStatus(m_iX, m_iY, nullptr);
+
 			m_iX = m_iDestX;
 			m_iY = m_iDestY;
+
 			m_pParent->SetStageStatus(m_iX, m_iY, m_eBlockType);		//	新しいポジションに値を設定
+			m_pParent->SetBlockStatus(m_iX, m_iY, this);
+
+			m_MoveInfo.ReverseMoveDir();	//	次回の移動方向を反転させる
+
+			m_pParent->IncreaseClickCount();
 			m_pParent->SetBlockMoving(false);
 		}
 	}
@@ -123,22 +153,26 @@ void ASuperBlock::Clicked(float mouseX, float mouseZ)
 
 	m_iMoveDirX = m_iMoveDirY = 0;	//	ステージ配列上の座標
 
-	if (CheckPointInRect(centerX - BSizeDiv4, centerZ + BSizeDiv4, BSizeDiv2, BSizeDiv4, mouseX, mouseZ))		//	上移動要求
-	{
-		m_iMoveDirY = -1;
-	}
-	else if (CheckPointInRect(centerX - BSizeDiv4, centerZ - BSizeDiv2, BSizeDiv2, BSizeDiv4, mouseX, mouseZ))	//	下移動要求
-	{
-		m_iMoveDirY = 1;
-	}
-	else if (CheckPointInRect(centerX + BSizeDiv4, centerZ - BSizeDiv4, BSizeDiv4, BSizeDiv2, mouseX, mouseZ))	//	右移動要求
-	{
-		m_iMoveDirX = 1;
-	}
-	else if (CheckPointInRect(centerX - BSizeDiv2, centerZ - BSizeDiv4, BSizeDiv4, BSizeDiv2, mouseX, mouseZ))	//	左移動要求
-	{
-		m_iMoveDirX = -1;
-	}
+	m_iMoveDirX = m_MoveInfo.GetMoveDirX();
+	m_iMoveDirY = m_MoveInfo.GetMoveDirY();
+
+	//	クリックした座標に応じて移動方向を決める場合
+	//if (CheckPointInRect(centerX - BSizeDiv4, centerZ + BSizeDiv4, BSizeDiv2, BSizeDiv4, mouseX, mouseZ))		//	上移動要求
+	//{
+	//	m_iMoveDirY = -1;
+	//}
+	//else if (CheckPointInRect(centerX - BSizeDiv4, centerZ - BSizeDiv2, BSizeDiv2, BSizeDiv4, mouseX, mouseZ))	//	下移動要求
+	//{
+	//	m_iMoveDirY = 1;
+	//}
+	//else if (CheckPointInRect(centerX + BSizeDiv4, centerZ - BSizeDiv4, BSizeDiv4, BSizeDiv2, mouseX, mouseZ))	//	右移動要求
+	//{
+	//	m_iMoveDirX = 1;
+	//}
+	//else if (CheckPointInRect(centerX - BSizeDiv2, centerZ - BSizeDiv4, BSizeDiv4, BSizeDiv2, mouseX, mouseZ))	//	左移動要求
+	//{
+	//	m_iMoveDirX = -1;
+	//}
 
 	int destPosStatus = m_pParent->GetStageStatus(m_iX + m_iMoveDirX, m_iY + m_iMoveDirY);
 
@@ -154,6 +188,47 @@ void ASuperBlock::Clicked(float mouseX, float mouseZ)
 		m_bMoving = true;
 		m_fTimer = 0;
 		m_pParent->SetBlockMoving(true);
+	}
+}
+
+
+
+//-------------------------------------------------------------
+// Name: BeginCursorOver()
+// Desc: 
+//-------------------------------------------------------------
+void ASuperBlock::BeginCursorOver(UPrimitiveComponent* TouchedComponent)
+{
+	UE_LOG(LogTemp, Warning, TEXT("BeginCursorOver!."));
+	if (m_bMovable)
+	{
+		m_pChildArrowActor->SetActorHiddenInGame(false);
+		float rot_ = 0;
+		if (m_MoveInfo.IsMovingHorizontal())
+		{
+			rot_ = (m_MoveInfo.GetMoveDirX() == 1) ? 270.f : 90.f;
+		}
+		else
+		{
+			rot_ = (m_MoveInfo.GetMoveDirY() == 1) ? 180.f : 0;
+		}
+		m_pChildArrowActor->SetActorRelativeRotation(FRotator(rot_, 0, 0));
+		//m_pChildArrowActor->SetActorRotation(FRotator(0, yaw_, 0));
+	}
+}
+
+
+
+//-------------------------------------------------------------
+// Name: EndCursorOver()
+// Desc: 
+//-------------------------------------------------------------
+void ASuperBlock::EndCursorOver(UPrimitiveComponent* TouchedComponent)
+{
+	UE_LOG(LogTemp, Warning, TEXT("EndCursorOver!."));
+	if (m_bMovable)
+	{
+		m_pChildArrowActor->SetActorHiddenInGame(true);
 	}
 }
 
