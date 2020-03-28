@@ -6,6 +6,12 @@
 #include "Blueprint/UserWidget.h"
 #include "GameUserWidget.generated.h"
 
+//-------------------------------------------------------------
+// Macros
+//-------------------------------------------------------------
+#define TIME_TO_SHOW_IMAGE	1.5f
+
+
 /**
  * 
  */
@@ -26,6 +32,10 @@ public:
 	void SetMaxClickNum(int num) { m_iMaxClickNum = num; }
 	UFUNCTION()
 	void UpdateClickNumText(int currentClickNum);
+	UFUNCTION()
+	void ShowClearImage();
+	UFUNCTION()
+	void ShowGameOverImage();
 
 private:
 	//
@@ -44,5 +54,12 @@ private:
 	//	Variants
 	//
 	int		m_iMaxClickNum;
-	
+	bool	m_bShowClearImage;
+	bool	m_bShowGameOverImage;
+	float	m_fImageTimer;
+
+	//
+	//	Functions
+	//
+	bool ShowImage(class UImage* pImage, float DeltaTime);
 };

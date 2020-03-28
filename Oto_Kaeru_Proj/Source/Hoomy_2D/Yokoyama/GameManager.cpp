@@ -447,6 +447,7 @@ void AGameManager::Tick(float DeltaTime)
 		if (m_iClickCount > m_iMaxClickNum)
 		{
 			m_bGameOver = true;
+			m_pWidget->ShowGameOverImage();
 			UE_LOG(LogTemp, Warning, TEXT("GameOver!"));
 		}
 	}
@@ -570,6 +571,7 @@ void AGameManager::CheckClear()
 	if (m_iGoalNum == m_iClearedGoalNum)
 	{
 		m_bClearStage = true;
+		m_pWidget->ShowClearImage();
 		UE_LOG(LogTemp, Warning, TEXT("Stage Clear!"));
 	}
 

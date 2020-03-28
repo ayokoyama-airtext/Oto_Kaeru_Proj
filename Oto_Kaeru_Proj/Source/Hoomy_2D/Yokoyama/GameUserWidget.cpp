@@ -13,7 +13,7 @@
 // Desc: Ctor
 //-------------------------------------------------------------
 UGameUserWidget::UGameUserWidget(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+	: Super(ObjectInitializer), m_bShowClearImage(false), m_bShowGameOverImage(false), m_fImageTimer(0)
 {
 }
 
@@ -51,6 +51,27 @@ void UGameUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	if (world->IsPaused())	return;
 
 	Super::NativeTick(MyGeometry, InDeltaTime);
+
+
+	//	Clear Image
+	if (m_bShowClearImage)
+	{
+		if (ShowImage(m_pClearImage, InDeltaTime))
+		{
+			m_bShowClearImage = false;
+			m_fImageTimer = 0;
+		}
+	}
+
+	//	GameOver Image
+	if (m_bShowGameOverImage)
+	{
+		if (ShowImage(m_pGameOverImage, InDeltaTime))
+		{
+			m_bShowGameOverImage = false;
+			m_fImageTimer = 0;
+		}
+	}
 }
 
 
@@ -66,4 +87,57 @@ void UGameUserWidget::UpdateClickNumText(int current)
 
 	FText text_ = FText::FromString(FString::Printf(TEXT("%d / %d"), current, m_iMaxClickNum));
 	m_pClickNumText->SetText(text_);
+}
+
+
+
+//-------------------------------------------------------------
+// Name: ShowClearImage()
+// Desc: 
+//-------------------------------------------------------------
+void UGameUserWidget::ShowClearImage()
+{
+	m_bShowClearImage = true;
+}
+
+
+
+//-------------------------------------------------------------
+// Name: ShowGameOverImage()
+// Desc: 
+//-------------------------------------------------------------
+void UGameUserWidget::ShowGameOverImage()
+{
+	m_bShowGameOverImage = true;
+}
+
+
+
+//-------------------------------------------------------------
+// Name: ShowImage()
+// Desc: 一定時間をかけてイメージを表示する
+// Out : 未完了 / false, 完了 / true
+//-------------------------------------------------------------
+bool UGameUserWidget::ShowImage(UImage* pImage, float DeltaTime)
+{
+	bool retVal = true;
+
+	if (m_fImageTimer <= TIME_TO_SHOW_IMAGE)
+	{
+		float rate_ = 0;
+
+		if ((m_fImageTimer += DeltaTime) < TIME_TO_SHOW_IMAGE)
+		{
+			rate_ = m_fImageTimer * (1.0f / TIME_TO_SHOW_IMAGE);
+			retVal = false;
+		}
+		else
+		{
+			rate_ = 1.0f;
+		}
+
+		pImage->SetRenderOpacity(rate_);
+	}
+
+	return retVal;
 }

@@ -55,7 +55,7 @@ void ASuperBlock::BeginPlay()
 		pRenderComp->OnBeginCursorOver.AddDynamic(this, &ASuperBlock::BeginCursorOver);
 		pRenderComp->OnEndCursorOver.AddDynamic(this, &ASuperBlock::EndCursorOver);
 
-		FString path_ = "/Game/Working/Yokoyama/BP/Test_Arrow_BP.Test_Arrow_BP_C";
+		FString path_ = "/Game/Working/Yokoyama/BP/Arrow_BP.Arrow_BP_C";
 		TSubclassOf<class APaperSpriteActor> sc = TSoftClassPtr<APaperSpriteActor>(FSoftObjectPath(*path_)).LoadSynchronous();	//	ƒNƒ‰ƒX‚ÌŽæ“¾
 		if (sc != nullptr)
 		{
