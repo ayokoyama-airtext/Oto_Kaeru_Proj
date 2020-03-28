@@ -42,10 +42,24 @@ struct FBlockInfo
 	int row;
 
 	UPROPERTY(VisibleAnywhere)
+	class APaperFlipbookActor*	Tonosama;
+
+	UPROPERTY(VisibleAnywhere)
+	class APaperFlipbookActor*	TonosamaInWater;
+
+	UPROPERTY(VisibleAnywhere)
 	class APaperFlipbookActor*	Tamago;
 
 	UPROPERTY(VisibleAnywhere)
 	class APaperFlipbookActor*	Otama;
+
+	UPROPERTY(VisibleAnywhere)
+	class ASuperBlock*			WaterBlock;
+
+	FBlockInfo()
+		:col(0),row(0),Tonosama(nullptr),TonosamaInWater(nullptr),Tamago(nullptr),Otama(nullptr),WaterBlock(nullptr)
+	{
+	}
 };
 
 
@@ -98,7 +112,10 @@ public:
 
 	/* クリック回数を増やす */
 	UFUNCTION(BlueprintCallable)
-	void IncreaseClickCount() { m_iClickCount++; }
+	void IncreaseClickCount();
+
+	UFUNCTION()
+	int GetMaxClickCount() const { return m_iMaxClickNum; }
 
 	///////////////////
 	// 入力で呼ぶ関数
@@ -111,6 +128,9 @@ protected:
 
 	/* ブロックを一つ一つ見ていく */
 	bool CheckBlock(int x, int y, int* map, bool bFirstCheck);
+
+	/* トノサマの周囲の水ブロックを探索 */
+	void CheckWaterBlockAroundTonosama();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -150,6 +170,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	bool		m_bGameOver;			//	ゲームオーバーしたかどうか
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class UGameUserWidget>	m_WidgetBPRef;		//	Widgetアセットへの参照
+	UPROPERTY(VisibleAnywhere)
+	class UGameUserWidget*				m_pWidget;			//	Widgetインスタンスのポインタ
+
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APaperSpriteActor>	m_BGBPRef;			//	背景アセットへの参照
@@ -157,6 +182,8 @@ protected:
 	TArray<TSubclassOf<class ASuperBlock>>	m_BlocksRefArray;	//	ブロックアセットへの参照
 	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<class APaperFlipbookActor>	m_TonosamaRef;	//	とのさまアセットへの参照
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<class APaperFlipbookActor>	m_TonosamaInWaterRef;	//	とのさまアセットへの参照
 	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<class APaperFlipbookActor>	m_TamagoRef;	//	たまごアセットへの参照
 	UPROPERTY(VisibleAnywhere)

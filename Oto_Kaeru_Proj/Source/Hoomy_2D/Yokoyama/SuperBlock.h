@@ -99,6 +99,8 @@ public:
 	virtual void SetMoveInfo(int charaCode) { if (m_bMovable) m_MoveInfo.Init(charaCode); }
 	/* クリックされた時に呼ぶ関数 */
 	virtual void Clicked(float mouseX, float mouseZ);
+	/* 移動可能かどうか変更 */
+	virtual void SetMovePossibility(bool bMove) { m_bMovable = bMove; }
 
 	//
 	//	カーソルオーバーイベントに登録
