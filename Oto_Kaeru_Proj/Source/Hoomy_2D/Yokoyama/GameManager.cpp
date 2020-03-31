@@ -158,9 +158,9 @@ void AGameManager::BeginPlay()
 		const TCHAR*  wchar_ = *str_;
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *str_);
 
-		//	最初の2文字は行数と列数
-		m_iRow = *wchar_++ - L'0';
-		m_iCol = *wchar_++ - L'0';
+		//	最初は行数と列数
+		m_iRow += (*wchar_++ - L'0') * 10;	m_iRow += (*wchar_++ - L'0');
+		m_iCol += (*wchar_++ - L'0') * 10;	m_iCol += (*wchar_++ - L'0');
 		//	クリック回数のチェック
 		m_iMaxClickNum += (*wchar_++ - L'0') * 10;
 		m_iMaxClickNum += (*wchar_++ - L'0');
