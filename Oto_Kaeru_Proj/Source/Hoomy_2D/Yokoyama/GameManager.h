@@ -126,7 +126,7 @@ protected:
 	/* クリアしてるかを確認 */
 	void CheckClear();
 
-	/* ブロックを一つ一つ見ていく */
+	/* ブロックを一つ一つ見ていく。再帰関数 */
 	bool CheckBlock(int x, int y, int* map, bool bFirstCheck);
 
 	/* トノサマの周囲の水ブロックを探索 */
