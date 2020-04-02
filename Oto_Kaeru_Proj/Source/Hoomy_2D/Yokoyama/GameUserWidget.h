@@ -13,6 +13,7 @@
 // Macros
 //-------------------------------------------------------------
 #define TIME_TO_SHOW_IMAGE	1.5f
+#define TIME_TO_BLACK_OUT	0.5f
 
 
 /**
@@ -42,6 +43,18 @@ public:
 
 private:
 	//
+	//	Enum
+	//
+	enum Phase
+	{
+		Normal,
+		Clear,
+		GameOver,
+		BlackOut,
+		EndScene
+	};
+
+	//
 	//	ŠeWidget
 	//
 	UPROPERTY()
@@ -53,16 +66,21 @@ private:
 	UPROPERTY()
 	class UImage*		m_pGameOverImage;
 
+	UPROPERTY()
+	class UImage*		m_pBlackImage;
+
 	//
 	//	Variants
 	//
 	int		m_iMaxClickNum;
-	bool	m_bShowClearImage;
-	bool	m_bShowGameOverImage;
 	float	m_fImageTimer;
+	Phase	m_ePhase;
+	int		m_iClearFlag;
 
 	//
 	//	Functions
 	//
-	bool ShowImage(class UImage* pImage, float DeltaTime);
+	bool ShowImage(class UImage* pImage, float MaxTime, float DeltaTime);
+
+
 };

@@ -517,7 +517,7 @@ void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
 
 
 //-------------------------------------------------------------
-// Name: SetStageStatus()
+// Name: SetBlockStatus()
 // Desc: 
 //-------------------------------------------------------------
 void AGameManager::SetBlockStatus(int col, int row, ASuperBlock* pBlock)
@@ -532,7 +532,7 @@ void AGameManager::SetBlockStatus(int col, int row, ASuperBlock* pBlock)
 
 //-------------------------------------------------------------
 // Name: CheckClear()
-// Desc: 
+// Desc: ゴールブロック毎にスタートと繋がっているかチェックして、全て繋がっていたらクリア
 //-------------------------------------------------------------
 void AGameManager::CheckClear()
 {
@@ -581,7 +581,8 @@ void AGameManager::CheckClear()
 
 //-------------------------------------------------------------
 // Name: CheckBlock()
-// Desc: 
+// Desc: 周囲の水ブロックをたどってスタートまでたどりつけるかチェック。再帰関数。
+// parm: *map / ブロックがチェック済みかを記録するバッファー
 //-------------------------------------------------------------
 bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 {
@@ -615,8 +616,8 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 
 
 //-------------------------------------------------------------
-// Name: CheckBlock()
-// Desc: 
+// Name: CheckWaterBlockAroundTonosama()
+// Desc: カエルブロックの周囲4マスに水ブロックが隣接しているか確認
 //-------------------------------------------------------------
 void AGameManager::CheckWaterBlockAroundTonosama()
 {
@@ -688,7 +689,7 @@ void AGameManager::CheckWaterBlockAroundTonosama()
 
 //-------------------------------------------------------------
 // Name: IncreaseClickCount()
-// Desc: 
+// Desc: ブロックが動き終わる度に呼ばれる関数
 //-------------------------------------------------------------
 void AGameManager::IncreaseClickCount()
 {

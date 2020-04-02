@@ -3,6 +3,7 @@
 
 #include "GameUserWidget.h"
 #include "Engine/GameEngine.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "GameManager.h"
@@ -13,7 +14,7 @@
 // Desc: Ctor
 //-------------------------------------------------------------
 UGameUserWidget::UGameUserWidget(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer), m_bShowClearImage(false), m_bShowGameOverImage(false), m_fImageTimer(0)
+	: Super(ObjectInitializer), m_fImageTimer(0), m_ePhase(Normal), m_iClearFlag(0)
 {
 }
 
@@ -34,6 +35,9 @@ void UGameUserWidget::NativeConstruct()
 
 	m_pGameOverImage = Cast<UImage>(GetWidgetFromName("GameOverImage"));
 	m_pGameOverImage->SetRenderOpacity(0);
+
+	m_pBlackImage = Cast<UImage>(GetWidgetFromName("BlackImage"));
+	m_pBlackImage->SetRenderOpacity(0);
 }
 
 
@@ -53,25 +57,45 @@ void UGameUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 
-	//	Clear Image
-	if (m_bShowClearImage)
+	switch (m_ePhase)
 	{
-		if (ShowImage(m_pClearImage, InDeltaTime))
+	case Normal:
+		break;
+	case Clear:
+		if (ShowImage(m_pClearImage, TIME_TO_SHOW_IMAGE, InDeltaTime))
 		{
-			m_bShowClearImage = false;
 			m_fImageTimer = 0;
+			m_ePhase = BlackOut;
 		}
+		break;
+	case GameOver:
+		if (ShowImage(m_pGameOverImage, TIME_TO_SHOW_IMAGE, InDeltaTime))
+		{
+			m_fImageTimer = 0;
+			m_ePhase = BlackOut;
+		}
+		break;
+	case BlackOut:
+		if (ShowImage(m_pBlackImage, TIME_TO_BLACK_OUT, InDeltaTime))
+		{
+			m_fImageTimer = 0;
+			m_ePhase = EndScene;
+		}
+		break;
+	case EndScene:
+		if (m_iClearFlag)
+		{
+			UGameplayStatics::OpenLevel(world, TEXT("/Game/Working/Sugita/Map/SugiMap"));
+		}
+		else
+		{
+			UGameplayStatics::OpenLevel(world, TEXT("/Game/Working/Miyamoto/Map/MiyaMap"));
+		}
+		break;
+	default:
+		break;
 	}
 
-	//	GameOver Image
-	if (m_bShowGameOverImage)
-	{
-		if (ShowImage(m_pGameOverImage, InDeltaTime))
-		{
-			m_bShowGameOverImage = false;
-			m_fImageTimer = 0;
-		}
-	}
 }
 
 
@@ -97,7 +121,8 @@ void UGameUserWidget::UpdateClickNumText(int current)
 //-------------------------------------------------------------
 void UGameUserWidget::ShowClearImage()
 {
-	m_bShowClearImage = true;
+	m_ePhase = Clear;
+	m_iClearFlag = 1;
 }
 
 
@@ -108,7 +133,7 @@ void UGameUserWidget::ShowClearImage()
 //-------------------------------------------------------------
 void UGameUserWidget::ShowGameOverImage()
 {
-	m_bShowGameOverImage = true;
+	m_ePhase = GameOver;
 }
 
 
@@ -118,17 +143,17 @@ void UGameUserWidget::ShowGameOverImage()
 // Desc: 一定時間をかけてイメージを表示する
 // Out : 未完了 / false, 完了 / true
 //-------------------------------------------------------------
-bool UGameUserWidget::ShowImage(UImage* pImage, float DeltaTime)
+bool UGameUserWidget::ShowImage(UImage* pImage, float MaxTime, float DeltaTime)
 {
 	bool retVal = true;
 
-	if (m_fImageTimer <= TIME_TO_SHOW_IMAGE)
+	if (m_fImageTimer <= MaxTime)
 	{
 		float rate_ = 0;
 
-		if ((m_fImageTimer += DeltaTime) < TIME_TO_SHOW_IMAGE)
+		if ((m_fImageTimer += DeltaTime) < MaxTime)
 		{
-			rate_ = m_fImageTimer * (1.0f / TIME_TO_SHOW_IMAGE);
+			rate_ = m_fImageTimer * (1.0f / MaxTime);
 			retVal = false;
 		}
 		else

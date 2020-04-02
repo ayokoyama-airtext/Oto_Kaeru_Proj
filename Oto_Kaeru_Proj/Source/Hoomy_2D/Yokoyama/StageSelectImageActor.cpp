@@ -13,7 +13,7 @@
 // Desc: Ctor
 //-------------------------------------------------------------
 AStageSelectImageActor::AStageSelectImageActor(const FObjectInitializer& ObjectInitializer)
-	:APaperSpriteActor(ObjectInitializer), m_LoadMapPath(""), m_bCursorOver(false), m_bCursorEnd(false), m_fTimer(0),m_fExpansionRate(1.0f), m_fMatParamAmount(0.06f),m_pMaterial_Instance(nullptr), m_fDefaultYCoord(360.f), m_fExpansionYCoord(400.f)
+	:APaperSpriteActor(ObjectInitializer), m_LoadMapPath(""), m_bCursorOver(false), m_bCursorEnd(false), m_fTimer(0),m_fExpansionRate(1.0f), m_fMatParamAmount(0.06f),m_pMaterial_Instance(nullptr), m_fDefaultYCoord(360.f), m_fExpansionYCoord(400.f), m_pStageNameActor(nullptr)
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -37,6 +37,12 @@ void AStageSelectImageActor::BeginPlay()
 	//	設定されているマテリアルからマテリアルインスタンスを作成してセット
 	m_pMaterial_Instance = pRenderComp->CreateAndSetMaterialInstanceDynamic(0);
 	m_pMaterial_Instance->SetScalarParameterValue("Amount", 0);
+
+	//	文字アクタを隠す
+	if (m_pStageNameActor)
+	{
+		m_pStageNameActor->GetRenderComponent()->SetSpriteColor(FLinearColor(1, 1, 1, 0));
+	}
 }
 
 
@@ -79,6 +85,12 @@ void AStageSelectImageActor::Tick(float DeltaTime)
 		FVector currentLoc_ = GetActorLocation();
 		new_ = FMath::Lerp(currentLoc_.Y, m_fExpansionYCoord, rate_);
 		SetActorLocation(FVector(currentLoc_.X, new_, currentLoc_.Z));
+
+		//	文字アクタ表示
+		if (m_pStageNameActor)
+		{
+			m_pStageNameActor->GetRenderComponent()->SetSpriteColor(FLinearColor(1, 1, 1, rate_));
+		}
 	}
 	else if (m_bCursorEnd)
 	{
@@ -109,6 +121,12 @@ void AStageSelectImageActor::Tick(float DeltaTime)
 		FVector currentLoc_ = GetActorLocation();
 		new_ = FMath::Lerp(currentLoc_.Y, m_fDefaultYCoord, rate_);
 		SetActorLocation(FVector(currentLoc_.X, new_, currentLoc_.Z));
+
+		//	文字アクタ非表示
+		if (m_pStageNameActor)
+		{
+			m_pStageNameActor->GetRenderComponent()->SetSpriteColor(FLinearColor(1, 1, 1, 1.0f - rate_));
+		}
 	}
 }
 
