@@ -63,4 +63,7 @@ protected:
 
 	UPROPERTY()
 	class UMaterialInstanceDynamic*	m_pMaterial_Instance;	//	マテリアルインスタンスへの参照
+
+	UPROPERTY(EditAnywhere)
+	class APaperSpriteActor*		m_pStageNameActor;		//	ステージ名のSpriteActorへの参照
 };
