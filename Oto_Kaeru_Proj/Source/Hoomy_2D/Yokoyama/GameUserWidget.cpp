@@ -14,7 +14,7 @@
 // Desc: Ctor
 //-------------------------------------------------------------
 UGameUserWidget::UGameUserWidget(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer), m_fImageTimer(0), m_ePhase(Normal), m_iClearFlag(0)
+	: Super(ObjectInitializer), m_fImageTimer(0), m_ePhase(Opening), m_iClearFlag(0)
 {
 }
 
@@ -36,8 +36,12 @@ void UGameUserWidget::NativeConstruct()
 	m_pGameOverImage = Cast<UImage>(GetWidgetFromName("GameOverImage"));
 	m_pGameOverImage->SetRenderOpacity(0);
 
+	m_pStageNameImage = Cast<UImage>(GetWidgetFromName("StageNameImage"));
+	m_pStageNameImage->SetRenderOpacity(0);
+
 	m_pBlackImage = Cast<UImage>(GetWidgetFromName("BlackImage"));
 	m_pBlackImage->SetRenderOpacity(0);
+	m_pBlackImage->SetVisibility(ESlateVisibility::Visible);
 }
 
 
@@ -59,24 +63,54 @@ void UGameUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	switch (m_ePhase)
 	{
+	case Opening:
+		if (ChangeImageVisibility(m_pStageNameImage, TIME_TO_SHOW_IMAGE, InDeltaTime, true))
+		{
+			m_fImageTimer = 0;
+			m_ePhase = OpeningWait;
+		}
+		break;
+	case OpeningWait:
+		if ((m_fImageTimer += InDeltaTime) >= TIME_TO_SHOW_IMAGE)
+		{
+			m_fImageTimer = 0;
+			m_ePhase = OpeningEnd;
+		}
+		break;
+	case OpeningEnd:
+		if (ChangeImageVisibility(m_pStageNameImage, TIME_TO_SHOW_IMAGE, InDeltaTime, false))
+		{
+			m_fImageTimer = 0;
+			AGameManager::NotifyOpeningEnd();
+			m_pBlackImage->SetVisibility(ESlateVisibility::HitTestInvisible);
+			m_ePhase = Normal;
+		}
+		break;
 	case Normal:
 		break;
 	case Clear:
-		if (ShowImage(m_pClearImage, TIME_TO_SHOW_IMAGE, InDeltaTime))
+		if (ChangeImageVisibility(m_pClearImage, TIME_TO_SHOW_IMAGE, InDeltaTime, true))
 		{
 			m_fImageTimer = 0;
-			m_ePhase = BlackOut;
+			m_ePhase = EndingWait;
 		}
 		break;
 	case GameOver:
-		if (ShowImage(m_pGameOverImage, TIME_TO_SHOW_IMAGE, InDeltaTime))
+		if (ChangeImageVisibility(m_pGameOverImage, TIME_TO_SHOW_IMAGE, InDeltaTime, true))
+		{
+			m_fImageTimer = 0;
+			m_ePhase = EndingWait;
+		}
+		break;
+	case EndingWait:
+		if ((m_fImageTimer += InDeltaTime) >= TIME_TO_SHOW_IMAGE)
 		{
 			m_fImageTimer = 0;
 			m_ePhase = BlackOut;
 		}
 		break;
 	case BlackOut:
-		if (ShowImage(m_pBlackImage, TIME_TO_BLACK_OUT, InDeltaTime))
+		if (ChangeImageVisibility(m_pBlackImage, TIME_TO_BLACK_OUT, InDeltaTime, true))
 		{
 			m_fImageTimer = 0;
 			m_ePhase = EndScene;
@@ -141,9 +175,10 @@ void UGameUserWidget::ShowGameOverImage()
 //-------------------------------------------------------------
 // Name: ShowImage()
 // Desc: 一定時間をかけてイメージを表示する
-// Out : 未完了 / false, 完了 / true
+// In  : [bShowImage] true/表示, false/非表示
+// Out : false/未完了, true/完了
 //-------------------------------------------------------------
-bool UGameUserWidget::ShowImage(UImage* pImage, float MaxTime, float DeltaTime)
+bool UGameUserWidget::ChangeImageVisibility(UImage* pImage, float MaxTime, float DeltaTime, bool bShowImage)
 {
 	bool retVal = true;
 
@@ -161,7 +196,14 @@ bool UGameUserWidget::ShowImage(UImage* pImage, float MaxTime, float DeltaTime)
 			rate_ = 1.0f;
 		}
 
-		pImage->SetRenderOpacity(rate_);
+		if (bShowImage)
+		{
+			pImage->SetRenderOpacity(rate_);
+		}
+		else
+		{
+			pImage->SetRenderOpacity(1.0f - rate_);
+		}
 	}
 
 	return retVal;

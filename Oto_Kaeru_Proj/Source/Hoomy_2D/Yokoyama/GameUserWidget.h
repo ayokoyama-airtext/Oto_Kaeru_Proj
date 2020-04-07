@@ -47,9 +47,13 @@ private:
 	//
 	enum Phase
 	{
+		Opening,
+		OpeningWait,
+		OpeningEnd,
 		Normal,
 		Clear,
 		GameOver,
+		EndingWait,
 		BlackOut,
 		EndScene
 	};
@@ -67,6 +71,9 @@ private:
 	class UImage*		m_pGameOverImage;
 
 	UPROPERTY()
+	class UImage*		m_pStageNameImage;
+
+	UPROPERTY()
 	class UImage*		m_pBlackImage;
 
 	//
@@ -80,7 +87,6 @@ private:
 	//
 	//	Functions
 	//
-	bool ShowImage(class UImage* pImage, float MaxTime, float DeltaTime);
-
+	bool ChangeImageVisibility(class UImage* pImage, float MaxTime, float DeltaTime, bool bShowImage);
 
 };

@@ -94,6 +94,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	static AGameManager* GetInstance();
 
+	/* オープニング演出の終了を通知 */
+	UFUNCTION(BlueprintCallable)
+	static void NotifyOpeningEnd() { instance->m_bOpeningEnd = true; };
+
 	/* ステージの状態を取得 */
 	UFUNCTION(BlueprintCallable)
 	int GetStageStatus(int col, int row) const;
@@ -193,4 +197,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	bool	m_bBlockMoving;		//	移動中のブロックがあるかどうか
+	UPROPERTY(VisibleAnywhere)
+	bool	m_bOpeningEnd;		//	オープニングが終わったかどうか
 };
