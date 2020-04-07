@@ -6,6 +6,17 @@
 #include "Blueprint/UserWidget.h"
 #include "RuleWidget.generated.h"
 
+#define SlidScale 20
+#define MinX 0
+#define MaxX -1920
+
+UENUM()
+enum ClickButton {
+	Next = 0,
+	Prev = 1
+};
+
+
 /**
  * @brief RuleWidget.h
  */
@@ -19,7 +30,17 @@ public:
 
 	// Exitフラグ
 	UPROPERTY()
-	bool bEndFlag;
+		bool bEndFlag;
+
+protected:
+	UFUNCTION(BlueprintCallable, Category = "Test")
+		void TestClicked() { UE_LOG(LogTemp, Log, TEXT("Clicked")); }
+
+	UFUNCTION(BlueprintCallable, Category = "Change")
+		void ChangeClick();
+
+	UFUNCTION(BlueprintCallable, Category = "End")
+		void EndLevel();
 
 protected:
 	// 初期化
@@ -31,9 +52,7 @@ protected:
 	//	終了処理
 	virtual void NativeDestruct() override;
 
-	int32 CheckClick();
-
-	void MoveAnim(int32 dir);
+	void MoveAnim();
 
 	/*
 	// テクスチャ
@@ -56,8 +75,7 @@ protected:
 	// スライドで使う
 	float PanelPosX;
 	float PanelPosY;
-};
 
-#define SlidScale 20
-#define MinX 0
-#define MaxX 1920
+	ClickButton m_pCButton;
+
+};

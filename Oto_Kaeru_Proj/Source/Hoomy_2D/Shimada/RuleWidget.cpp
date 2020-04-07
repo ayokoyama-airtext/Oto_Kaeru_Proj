@@ -7,11 +7,14 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // コンストラクタ
 URuleWidget::URuleWidget(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer), bClickFlag(false), ButtonNum(0), bEndFlag(false), PanelPosX(0), PanelPosY(0)
 {
+	m_pCButton = Prev;
+
 	/*
 	// テクスチャデータの取得
 	static ConstructorHelpers::FObjectFinder<UTexture2D> _DataFileFTex(TEXT("/Game/MainFolder/BG/OtoTitleBG")),
@@ -90,7 +93,6 @@ void URuleWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 
-
 }
 
 // 出現時
@@ -110,61 +112,88 @@ void URuleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (!bClickFlag)
-		ButtonNum = CheckClick();
+	if (bClickFlag)
+		MoveAnim();
 
-	if (ButtonNum == 1)
-		bEndFlag = true;
-	else if (ButtonNum == 2)
-		MoveAnim(ButtonNum);
-	else if (ButtonNum == 3)
-		MoveAnim(ButtonNum);
-
-}
-
-
-// ボタンのチェック確認
-int32 URuleWidget::CheckClick()
-{
-	UButton* _pButtonEFTex = Cast<UButton>(GetWidgetFromName("LeftEndButton"));
-	UButton* _pButtonNTex = Cast<UButton>(GetWidgetFromName("NextButton"));
-	UButton* _pButtonPTex = Cast<UButton>(GetWidgetFromName("PrevButton"));
-	UButton* _pButtonESTex = Cast<UButton>(GetWidgetFromName("RightEndButton"));
-
-	// クリック
-	if (!_pButtonEFTex->OnClicked.IsBound() || !_pButtonESTex->OnClicked.IsBound()) {
-		return 1;
-	}
-	if (!_pButtonNTex->OnClicked.IsBound()) {
-		return 2;
-	}
-	if (!_pButtonPTex->OnClicked.IsBound()) {
-		return 3;
-	}
-
-	return 0;
-}
-
-void URuleWidget::MoveAnim(int32 dir)
-{
+	// ポジション変更
 	UCanvasPanel* PanelWidget = Cast<UCanvasPanel>(GetWidgetFromName("SlidPanel"));
 	UCanvasPanelSlot* CanvasPanelSlot = Cast<UCanvasPanelSlot>(PanelWidget->Slot);
 
-	switch (dir)
-	{
-	case 2:
-		if (PanelPosX > -MaxX)
-			PanelPosX -= SlidScale;
-		else
-			bClickFlag = !bClickFlag;
+	CanvasPanelSlot->SetPosition(FVector2D(PanelPosX, PanelPosY));
 
-	case 3:
+	UButton* _pButtonNTex = Cast<UButton>(GetWidgetFromName("NextButton"));
+	UButton* _pButtonPTex = Cast<UButton>(GetWidgetFromName("PrevButton"));
+	UButton* _pButtonEndTex = Cast<UButton>(GetWidgetFromName("EndButton"));
+
+	// クリック
+	if (!bClickFlag) {
+		// Next
+		if (_pButtonNTex) {
+			if (!_pButtonNTex->OnClicked.IsBound()) {
+				// デリゲート追加
+				_pButtonNTex->OnClicked.AddDynamic(this, &URuleWidget::ChangeClick);
+			}
+		}
+		// Prev
+		if (_pButtonPTex) {
+			if (!_pButtonPTex->OnClicked.IsBound()) {
+				// デリゲート追加
+				_pButtonPTex->OnClicked.AddDynamic(this, &URuleWidget::ChangeClick);
+			}
+		}
+		// End
+		if (_pButtonEndTex) {
+			if (!_pButtonEndTex->OnClicked.IsBound()) {
+				// デリゲート追加
+				_pButtonEndTex->OnClicked.AddDynamic(this, &URuleWidget::EndLevel);
+			}
+		}
+	}
+
+}
+
+void URuleWidget::ChangeClick()
+{
+	bClickFlag = true;
+
+	if (m_pCButton == Next)
+		m_pCButton = Prev;
+	else
+		m_pCButton = Next;
+}
+
+void URuleWidget::MoveAnim()
+{
+	UE_LOG(LogTemp, Log, TEXT("MoveAnim"));
+
+	switch (m_pCButton)
+	{
+	case Next:
+		if (PanelPosX > MaxX) {
+			PanelPosX -= SlidScale;
+			UE_LOG(LogTemp, Log, TEXT("Ok"));
+		}
+		else {
+			bClickFlag = false;
+			UE_LOG(LogTemp, Log, TEXT("No"));
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("In"));
+
+		break;
+
+	case Prev:
 		if (PanelPosX < MinX)
 			PanelPosX += SlidScale;
 		else
-			bClickFlag = !bClickFlag;
+			bClickFlag = false;
+
+		break;
 
 	}
 
-	CanvasPanelSlot->SetPosition(FVector2D(PanelPosX, PanelPosY));
+}
+void URuleWidget::EndLevel()
+{
+	UGameplayStatics::OpenLevel(this, TEXT("/Game/Working/Shimada/Map/Title"));
 }
