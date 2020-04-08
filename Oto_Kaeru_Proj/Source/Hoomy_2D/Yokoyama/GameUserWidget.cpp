@@ -29,6 +29,7 @@ void UGameUserWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	m_pClickNumText = Cast<UTextBlock>(GetWidgetFromName("ClickNumText"));
+	m_pClickNumText->SetRenderOpacity(0);
 
 	m_pClearImage = Cast<UImage>(GetWidgetFromName("ClearImage"));
 	m_pClearImage->SetRenderOpacity(0);
@@ -138,13 +139,27 @@ void UGameUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 // Name: UpdateClickNumText()
 // Desc: アニメーション
 //-------------------------------------------------------------
+void UGameUserWidget::SetMaxClickNum(int num)
+{
+	m_iMaxClickNum = num;
+	UpdateClickNumText(0);
+}
+
+
+
+//-------------------------------------------------------------
+// Name: UpdateClickNumText()
+// Desc: アニメーション
+//-------------------------------------------------------------
 void UGameUserWidget::UpdateClickNumText(int current)
 {
-	if (!m_pClickNumText)
+	UpdateClickNumBP(m_iMaxClickNum - current);
+
+	/*if (!m_pClickNumText)
 		return;
 
 	FText text_ = FText::FromString(FString::Printf(TEXT("%d / %d"), current, m_iMaxClickNum));
-	m_pClickNumText->SetText(text_);
+	m_pClickNumText->SetText(text_);*/
 }
 
 

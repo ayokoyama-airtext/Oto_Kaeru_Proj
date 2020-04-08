@@ -399,7 +399,6 @@ void AGameManager::BeginPlay()
 		{
 			m_pWidget->AddToViewport();
 			m_pWidget->SetMaxClickNum(m_iMaxClickNum);
-			m_pWidget->UpdateClickNumText(0);
 		}
 	}
 
