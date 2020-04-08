@@ -49,9 +49,9 @@ void ASuperBlock::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UPaperSpriteComponent* pRenderComp = GetRenderComponent();
 	if (m_bMovable)
 	{
-		UPaperSpriteComponent* pRenderComp = GetRenderComponent();
 		pRenderComp->OnBeginCursorOver.AddDynamic(this, &ASuperBlock::BeginCursorOver);
 		pRenderComp->OnEndCursorOver.AddDynamic(this, &ASuperBlock::EndCursorOver);
 
@@ -65,11 +65,14 @@ void ASuperBlock::BeginPlay()
 				child_->SetActorRotation(FRotator(0, 0, 0));
 				child_->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
 				m_pChildArrowActor = child_;
-				m_pChildArrowActor->SetActorRelativeLocation(FVector(0, -5.f, 0));
+				m_pChildArrowActor->SetActorRelativeLocation(FVector(0, +2.5f, 0));
 				m_pChildArrowActor->SetActorHiddenInGame(true);
 			}
 		}
 	}
+
+	//	設定されているマテリアルからマテリアルインスタンスを作成してセット
+	m_pMaterial_Instance = pRenderComp->CreateAndSetMaterialInstanceDynamic(0);
 }
 
 

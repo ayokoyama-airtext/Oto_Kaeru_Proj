@@ -2,6 +2,9 @@
 
 
 #include "WaterBlock.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "PaperSprite.h"
+#include "Paper2D/Classes/PaperSpriteComponent.h"
 
 
 //-------------------------------------------------------------
@@ -36,6 +39,7 @@ void AWaterBlock::BeginPlay()
 {
 	Super::BeginPlay();
 
+	m_pMaterial_Instance->SetScalarParameterValue("Amount", 0);
 }
 
 
