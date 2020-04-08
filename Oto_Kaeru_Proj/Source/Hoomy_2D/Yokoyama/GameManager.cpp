@@ -30,7 +30,7 @@ AGameManager* AGameManager::instance = nullptr;
 // Desc: Ctor
 //-------------------------------------------------------------
 AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
-	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0)
+	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_bOpeningEnd(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -199,8 +199,8 @@ void AGameManager::BeginPlay()
 							break;
 						case (int)EBlockType::EStart:
 						{
-							APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y-5, z), FRotator(0, 0, 0));
-							APaperFlipbookActor* actInWater_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaInWaterRef, FVector(x, y-5, z), FRotator(0, 0, 0));
+							APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+							APaperFlipbookActor* actInWater_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaInWaterRef, FVector(x, y+5, z), FRotator(0, 0, 0));
 							ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
 							if (act_ && actInWater_ && waterBlock_)
 							{
@@ -208,7 +208,9 @@ void AGameManager::BeginPlay()
 								m_StartBlock.col = col;
 								m_StartBlock.row = row;
 								m_StartBlock.Tonosama = act_;
+								act_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
 								m_StartBlock.TonosamaInWater = actInWater_;
+								actInWater_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
 								actInWater_->SetActorHiddenInGame(true);
 								m_StartBlock.WaterBlock = waterBlock_;
 								waterBlock_->SetMovePossibility(false);
@@ -218,8 +220,8 @@ void AGameManager::BeginPlay()
 						break;
 						case (int)EBlockType::EGoal:
 						{
-							APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y-5, z), FRotator(0, 0, 0));
-							APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y-5, z), FRotator(0, 0, 0));
+							APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+							APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
 							ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
 							if (tamago_ && otama_ && waterBlock_)
 							{
@@ -707,7 +709,7 @@ void AGameManager::LeftClickEvent()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Left Click!"));
 
-	if (m_bClearStage || m_bGameOver)
+	if (m_bClearStage || m_bGameOver || !m_bOpeningEnd)
 		return;
 
 	APlayerController* pController = UGameplayStatics::GetPlayerController(this, 0);
