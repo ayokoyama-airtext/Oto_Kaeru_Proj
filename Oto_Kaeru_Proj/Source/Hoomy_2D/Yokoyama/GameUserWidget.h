@@ -33,9 +33,11 @@ protected:
 
 public:
 	UFUNCTION()
-	void SetMaxClickNum(int num) { m_iMaxClickNum = num; }
+	void SetMaxClickNum(int num);
 	UFUNCTION()
 	void UpdateClickNumText(int currentClickNum);
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void UpdateClickNumBP(int currentClickNum);
 	UFUNCTION()
 	void ShowClearImage();
 	UFUNCTION()

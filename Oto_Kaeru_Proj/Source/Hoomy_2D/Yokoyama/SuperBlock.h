@@ -159,4 +159,7 @@ protected:
 	//	矢印のアクタ
 	UPROPERTY(VisibleAnywhere)
 	APaperSpriteActor*		m_pChildArrowActor;
+
+	UPROPERTY()
+	class UMaterialInstanceDynamic*	m_pMaterial_Instance;	//	マテリアルインスタンスへの参照
 };
