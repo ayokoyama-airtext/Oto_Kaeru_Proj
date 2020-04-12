@@ -26,6 +26,7 @@ enum class EBlockType : uint8
 	EWater,
 	EStart,
 	EGoal,
+	EWaterWall,
 	EMax,
 };
 
