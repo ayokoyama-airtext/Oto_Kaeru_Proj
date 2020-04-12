@@ -143,10 +143,7 @@ void AGameManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (instance == nullptr)
-	{
-		instance = this;
-	}
+	instance = this;
 	
 	//	ストリングテーブルからステージデータを読み込む
 	if (m_pStringTable)
@@ -190,7 +187,7 @@ void AGameManager::BeginPlay()
 				if (blockID_ != 0)
 				{
 					int col = i % m_iCol;
-					int row = i / m_iRow;
+					int row = i / m_iCol;
 					x = col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
 					z = height - (row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
 					switch (blockID_)
@@ -234,9 +231,21 @@ void AGameManager::BeginPlay()
 								bInfo.Otama->SetActorHiddenInGame(true);
 								bInfo.WaterBlock = waterBlock_;
 								waterBlock_->SetMovePossibility(false);
-								waterBlock_->SetActorHiddenInGame(true);
+								waterBlock_->SetActorHiddenInGame(false);
 								m_GoalBlockArray.Emplace(bInfo);
 								UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
+							}
+						}
+						break;
+						case (int)EBlockType::EWaterWall:
+						{
+							ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
+							if (block_)
+							{
+								m_BlockArray[i] = block_;
+								block_->SetPosition(col, row);
+								block_->SetParent(this);
+								block_->SetMoveInfo(L' ');
 							}
 						}
 						break;
@@ -419,10 +428,7 @@ void AGameManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	if (instance != nullptr)
-	{
-		instance = nullptr;
-	}
+	instance = nullptr;
 }
 
 
@@ -540,32 +546,44 @@ void AGameManager::CheckClear()
 	if (m_iGoalNum == m_iClearedGoalNum)
 		return;
 
+	if (m_StartBlock.TonosamaInWater->bHidden)
+		return;
+
 	int count = 0;
 	for (auto goal : m_GoalBlockArray)
 	{
-		int *map = new int[m_iCol*m_iRow]();
-
-		if (CheckBlock(goal.col, goal.row, map, true))
+		//	すでに一度繋がっていた場合
+		if (!goal.Otama->bHidden)
 		{
-			if (goal.Otama->bHidden)
-			{
-				goal.Tamago->SetActorHiddenInGame(true);
-				goal.Otama->SetActorHiddenInGame(false);
-				goal.WaterBlock->SetActorHiddenInGame(false);
-			}
 			count++;
 		}
+		//	まだ一度もつながっていない場合
 		else
 		{
-			if (goal.Tamago->bHidden)
-			{
-				goal.Tamago->SetActorHiddenInGame(false);
-				goal.Otama->SetActorHiddenInGame(true);
-				goal.WaterBlock->SetActorHiddenInGame(true);
-			}
-		}
+			int *map = new int[m_iCol*m_iRow]();
 
-		delete[]map;
+			if (CheckBlock(goal.col, goal.row, map, true))
+			{
+				if (goal.Otama->bHidden)
+				{
+					goal.Tamago->SetActorHiddenInGame(true);
+					goal.Otama->SetActorHiddenInGame(false);
+					goal.WaterBlock->SetActorHiddenInGame(false);
+				}
+				count++;
+			}
+			/*else
+			{
+				if (goal.Tamago->bHidden)
+				{
+					goal.Tamago->SetActorHiddenInGame(false);
+					goal.Otama->SetActorHiddenInGame(true);
+					goal.WaterBlock->SetActorHiddenInGame(true);
+				}
+			}*/
+
+			delete[]map;
+		}
 	}
 	m_iClearedGoalNum = count;
 
@@ -595,7 +613,7 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 
 	if (!bFirstCheck)
 	{
-	if (m_StageArray[x + m_iCol * y] != (int)EBlockType::EWater)
+	if (m_StageArray[x + m_iCol * y] != (int)EBlockType::EWater && m_StageArray[x + m_iCol * y] != (int)EBlockType::EWaterWall)
 		return false;
 	}
 

@@ -66,13 +66,26 @@ void ASuperBlock::BeginPlay()
 				child_->AttachToActor(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
 				m_pChildArrowActor = child_;
 				m_pChildArrowActor->SetActorRelativeLocation(FVector(0, +2.5f, 0));
-				m_pChildArrowActor->SetActorHiddenInGame(true);
+				m_pChildArrowActor->SetActorHiddenInGame(false);
 			}
 		}
 	}
 
 	//	設定されているマテリアルからマテリアルインスタンスを作成してセット
 	m_pMaterial_Instance = pRenderComp->CreateAndSetMaterialInstanceDynamic(0);
+}
+
+
+
+//-------------------------------------------------------------
+// Name: EndPlay()
+// Desc: ゲーム終了直前に呼ばれる処理
+//-------------------------------------------------------------
+void ASuperBlock::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	m_pParent = nullptr;
 }
 
 
@@ -119,6 +132,7 @@ void ASuperBlock::Tick(float DeltaTime)
 
 		SetActorLocation(FMath::Lerp(FVector(m_fStartWorldX, BLOCK_Y_COORD, m_fStartWorldZ), FVector(m_fDestWorldX, BLOCK_Y_COORD, m_fDestWorldZ), rate));
 
+		//	移動完了時の処理
 		if (!m_bMoving)
 		{
 			m_fTimer = 0;
@@ -132,6 +146,8 @@ void ASuperBlock::Tick(float DeltaTime)
 			m_pParent->SetBlockStatus(m_iX, m_iY, this);
 
 			m_MoveInfo.ReverseMoveDir();	//	次回の移動方向を反転させる
+
+			RotateChildArrow();
 
 			m_pParent->IncreaseClickCount();
 			m_pParent->SetBlockMoving(false);
@@ -205,17 +221,10 @@ void ASuperBlock::BeginCursorOver(UPrimitiveComponent* TouchedComponent)
 	UE_LOG(LogTemp, Warning, TEXT("BeginCursorOver!."));
 	if (m_bMovable)
 	{
-		m_pChildArrowActor->SetActorHiddenInGame(false);
-		float rot_ = 0;
-		if (m_MoveInfo.IsMovingHorizontal())
-		{
-			rot_ = (m_MoveInfo.GetMoveDirX() == 1) ? 270.f : 90.f;
-		}
-		else
-		{
-			rot_ = (m_MoveInfo.GetMoveDirY() == 1) ? 180.f : 0;
-		}
-		m_pChildArrowActor->SetActorRelativeRotation(FRotator(rot_, 0, 0));
+		//m_pChildArrowActor->SetActorHiddenInGame(false);
+		
+		RotateChildArrow();
+
 		//m_pChildArrowActor->SetActorRotation(FRotator(0, yaw_, 0));
 	}
 }
@@ -231,7 +240,7 @@ void ASuperBlock::EndCursorOver(UPrimitiveComponent* TouchedComponent)
 	UE_LOG(LogTemp, Warning, TEXT("EndCursorOver!."));
 	if (m_bMovable)
 	{
-		m_pChildArrowActor->SetActorHiddenInGame(true);
+		//m_pChildArrowActor->SetActorHiddenInGame(true);
 	}
 }
 
@@ -253,4 +262,55 @@ bool ASuperBlock::CheckPointInRect(float left, float bottom, float width, float 
 		return false;
 
 	return true;
+}
+
+
+
+//-------------------------------------------------------------
+// Name: RotateChildArrow()
+// Desc: 矢印を回転させて現在の進行方向に合わせる
+//-------------------------------------------------------------
+void ASuperBlock::RotateChildArrow()
+{
+	float rot_ = 0;
+	if (m_MoveInfo.IsMovingHorizontal())
+	{
+		rot_ = (m_MoveInfo.GetMoveDirX() == 1) ? 270.f : 90.f;
+	}
+	else
+	{
+		rot_ = (m_MoveInfo.GetMoveDirY() == 1) ? 180.f : 0;
+	}
+	m_pChildArrowActor->SetActorRelativeRotation(FRotator(rot_, 0, 0));
+}
+
+
+
+void ASuperBlock::SetMoveInfo(int charaCode)
+{
+	if (m_bMovable)
+	{
+		if (charaCode == L' ')
+		{
+			SetMovePossibility(false);
+			m_pChildArrowActor->Destroy();
+			m_pChildArrowActor = nullptr;
+		}
+		else
+		{
+			m_MoveInfo.Init(charaCode);
+			RotateChildArrow();
+		}
+	}
+}
+
+
+
+void ASuperBlock::SetMovePossibility(bool bMove) 
+{ 
+	m_bMovable = bMove;
+	if (m_pChildArrowActor != nullptr)
+	{
+		m_pChildArrowActor->SetActorHiddenInGame(!bMove);
+	}
 }

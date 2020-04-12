@@ -83,6 +83,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -96,11 +97,11 @@ public:
 	/* 親を設定 */
 	virtual void SetParent(class AGameManager* pParent) { m_pParent = pParent; }
 	/* 移動情報を設定 */
-	virtual void SetMoveInfo(int charaCode) { if (m_bMovable) m_MoveInfo.Init(charaCode); }
+	virtual void SetMoveInfo(int charaCode);
 	/* クリックされた時に呼ぶ関数 */
 	virtual void Clicked(float mouseX, float mouseZ);
 	/* 移動可能かどうか変更 */
-	virtual void SetMovePossibility(bool bMove) { m_bMovable = bMove; }
+	virtual void SetMovePossibility(bool bMove);
 
 	//
 	//	カーソルオーバーイベントに登録
@@ -113,6 +114,9 @@ public:
 protected:
 	/* 点が矩形内にあるか判定する */
 	bool CheckPointInRect(float left, float bottom, float width, float height, float pointX, float pointY);
+
+	/* 矢印を反転させる */
+	void RotateChildArrow();
 
 protected:
 	UPROPERTY(VisibleAnywhere)
