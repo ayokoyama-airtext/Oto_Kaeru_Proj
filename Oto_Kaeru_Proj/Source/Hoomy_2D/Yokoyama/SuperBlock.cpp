@@ -78,6 +78,19 @@ void ASuperBlock::BeginPlay()
 
 
 //-------------------------------------------------------------
+// Name: EndPlay()
+// Desc: ゲーム終了直前に呼ばれる処理
+//-------------------------------------------------------------
+void ASuperBlock::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	m_pParent = nullptr;
+}
+
+
+
+//-------------------------------------------------------------
 // Name: Tick()
 // Desc: 毎フレーム呼ばれる関数
 // Parm: DeltaTime / 前フレームからの経過時間
@@ -277,8 +290,17 @@ void ASuperBlock::SetMoveInfo(int charaCode)
 {
 	if (m_bMovable)
 	{
-		m_MoveInfo.Init(charaCode);
-		RotateChildArrow();
+		if (charaCode == L' ')
+		{
+			SetMovePossibility(false);
+			m_pChildArrowActor->Destroy();
+			m_pChildArrowActor = nullptr;
+		}
+		else
+		{
+			m_MoveInfo.Init(charaCode);
+			RotateChildArrow();
+		}
 	}
 }
 
