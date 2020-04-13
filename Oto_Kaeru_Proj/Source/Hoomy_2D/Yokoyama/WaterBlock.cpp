@@ -39,7 +39,7 @@ void AWaterBlock::BeginPlay()
 {
 	Super::BeginPlay();
 
-	m_pMaterial_Instance->SetScalarParameterValue("Amount", 0);
+	//m_pMaterial_Instance->SetScalarParameterValue("Amount", 0);
 }
 
 
