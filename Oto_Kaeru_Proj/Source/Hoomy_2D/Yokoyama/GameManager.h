@@ -17,7 +17,7 @@
 #define BLOCK_MOVE_TIME		0.25f
 #define CAMERA_Y_COORD		1100.0f
 
-
+/* 新しく追加するときは最後尾に追加すること */
 UENUM()
 enum class EBlockType : uint8
 {
@@ -27,6 +27,7 @@ enum class EBlockType : uint8
 	EStart,
 	EGoal,
 	EWaterWall,
+	EStartWithWater,
 	EMax,
 };
 
@@ -42,7 +43,7 @@ struct FBlockInfo
 	UPROPERTY(VisibleAnywhere)
 	int row;
 
-	UPROPERTY(VisibleAnywhere)
+	/*UPROPERTY(VisibleAnywhere)
 	class APaperFlipbookActor*	Tonosama;
 
 	UPROPERTY(VisibleAnywhere)
@@ -52,13 +53,27 @@ struct FBlockInfo
 	class APaperFlipbookActor*	Tamago;
 
 	UPROPERTY(VisibleAnywhere)
-	class APaperFlipbookActor*	Otama;
+	class APaperFlipbookActor*	Otama;*/
+
+	UPROPERTY(VisibleAnywhere)
+	class AOtosama*	TonosamaBP;
+
+	UPROPERTY(VisibleAnywhere)
+	class AOtamago * TamagoBP;
 
 	UPROPERTY(VisibleAnywhere)
 	class ASuperBlock*			WaterBlock;
 
+	/* Tonosama用変数 */
+	UPROPERTY(VisibleAnywhere)
+	bool bInWater;
+
+	/* Tamago用変数 */
+	UPROPERTY(VisibleAnywhere)
+	bool bClear;
+
 	FBlockInfo()
-		:col(0),row(0),Tonosama(nullptr),TonosamaInWater(nullptr),Tamago(nullptr),Otama(nullptr),WaterBlock(nullptr)
+		:col(0),row(0),TonosamaBP(nullptr), TamagoBP(nullptr)/*,Tonosama(nullptr),TonosamaInWater(nullptr),Tamago(nullptr),Otama(nullptr)*/,WaterBlock(nullptr), bInWater(false), bClear(false)
 	{
 	}
 };
@@ -121,6 +136,10 @@ public:
 
 	UFUNCTION()
 	int GetMaxClickCount() const { return m_iMaxClickNum; }
+
+	/* カエルの状態を変える */
+	UFUNCTION(BlueprintCallable)
+	void ChangeOtonosamaState(bool bInWater);
 
 	///////////////////
 	// 入力で呼ぶ関数
@@ -185,6 +204,7 @@ protected:
 	TSubclassOf<class APaperSpriteActor>	m_BGBPRef;			//	背景アセットへの参照
 	UPROPERTY(VisibleAnywhere)
 	TArray<TSubclassOf<class ASuperBlock>>	m_BlocksRefArray;	//	ブロックアセットへの参照
+
 	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<class APaperFlipbookActor>	m_TonosamaRef;	//	とのさまアセットへの参照
 	UPROPERTY(VisibleAnywhere)
@@ -193,6 +213,12 @@ protected:
 	TSubclassOf<class APaperFlipbookActor>	m_TamagoRef;	//	たまごアセットへの参照
 	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<class APaperFlipbookActor>	m_OtamaRef;		//	おたまアセットへの参照
+
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<class AOtosama>	m_TonosamaBPRef;
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<class AOtamago>		m_TamagoBPRef;
+
 	UPROPERTY(VisibleAnywhere)
 	class ACameraActor*		m_pCamera;	//	ワールドのカメラ
 

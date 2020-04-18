@@ -17,6 +17,8 @@
 #include "SuperBlock.h"
 #include "WallBlock.h"
 #include "GameUserWidget.h"
+#include "Shimada/Otosama.h"
+#include "Shimada/Otamago.h"
 
 //-------------------------------------------------------------
 // Static Fields Init
@@ -46,8 +48,12 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 										"/Game/Working/Yokoyama/BP/WaterBlockBP",
 										};
 	FString TonosamaPath = "/Game/Working/Yokoyama/BP/ANotInFlipBook_BP";
+	FString TonosamaInWaterPath = "/Game/Working/Yokoyama/BP/AInFlipBook_BP";
 	FString TamagoPath = "/Game/Working/Yokoyama/BP/TamagoFlipbook_BP";
 	FString OtamaPath = "/Game/Working/Yokoyama/BP/OtamaFlipbook_BP";
+
+	FString OtonosamaBPPath = "/Game/Working/Shimada/Chara/Otosama/MyOtosama";
+	FString TamagoBPPath = "/Game/Working/Shimada/Chara/Otama/MyOtamago";
 
 	for (int i = 1; i < (uint8)EBlockType::EStart; ++i)
 	{
@@ -65,6 +71,13 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 		}
 	}
 	{
+		ConstructorHelpers::FClassFinder<UBlueprint> BluePrintFile(*TonosamaInWaterPath);
+		if (BluePrintFile.Class)
+		{
+			m_TonosamaInWaterRef = (UClass*)BluePrintFile.Class;
+		}
+	}
+	{
 		ConstructorHelpers::FClassFinder<UBlueprint> BluePrintFile(*TamagoPath);
 		if (BluePrintFile.Class)
 		{
@@ -76,6 +89,21 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 		if (BluePrintFile.Class)
 		{
 			m_OtamaRef = (UClass*)BluePrintFile.Class;
+		}
+	}
+
+	{
+		ConstructorHelpers::FClassFinder<UBlueprint> BluePrintFile(*OtonosamaBPPath);
+		if (BluePrintFile.Class)
+		{
+			m_TonosamaBPRef = (UClass*)BluePrintFile.Class;
+		}
+	}
+	{
+		ConstructorHelpers::FClassFinder<UBlueprint> BluePrintFile(*TamagoBPPath);
+		if (BluePrintFile.Class)
+		{
+			m_TamagoBPRef = (UClass*)BluePrintFile.Class;
 		}
 	}
 
@@ -91,6 +119,9 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 
 	FString TamagoPath = "Blueprint'/Game/Working/Yokoyama/BP/TamagoFlipbook_BP.TamagoFlipbook_BP'";
 	FString OtamaPath = "Blueprint'/Game/Working/Yokoyama/BP/OtamaFlipbook_BP.OtamaFlipbook_BP'";
+
+	FString OtonosamaBPPath = "Blueprint'/Game/Working/Shimada/Chara/Otosama/MyOtosama.MyOtosama'";
+	FString TamagoBPPath = "Blueprint'/Game/Working/Shimada/Chara/Otama/MyOtamago.MyOtamago'";
 	
 	for (int i = 1; i < (uint8)EBlockType::EStart; ++i)
 	{
@@ -128,6 +159,21 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 		if (BluePrintFile.Object)
 		{
 			m_OtamaRef = (UClass*)BluePrintFile.Object->GeneratedClass;
+		}
+	}
+
+	{
+		ConstructorHelpers::FObjectFinder<UBlueprint> BluePrintFile(*OtonosamaBPPath);
+		if (BluePrintFile.Object)
+		{
+			m_TonosamaBPRef = (UClass*)BluePrintFile.Object->GeneratedClass;
+		}
+	}
+	{
+		ConstructorHelpers::FObjectFinder<UBlueprint> BluePrintFile(*TamagoBPPath);
+		if (BluePrintFile.Object)
+		{
+			m_TamagoBPRef = (UClass*)BluePrintFile.Object->GeneratedClass;
 		}
 	}
 #endif
@@ -196,19 +242,22 @@ void AGameManager::BeginPlay()
 							break;
 						case (int)EBlockType::EStart:
 						{
-							APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
-							APaperFlipbookActor* actInWater_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaInWaterRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+							//APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+							//APaperFlipbookActor* actInWater_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaInWaterRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+							AOtosama* actBP_ = GetWorld()->SpawnActor<AOtosama>(m_TonosamaBPRef, FVector(x, y + 5, z), FRotator(0, 0, 0));
 							ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
-							if (act_ && actInWater_ && waterBlock_)
+							if (/*act_ && actInWater_ &&*/actBP_ && waterBlock_)
 							{
 								//	スタートの情報を保持
 								m_StartBlock.col = col;
 								m_StartBlock.row = row;
-								m_StartBlock.Tonosama = act_;
-								act_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
-								m_StartBlock.TonosamaInWater = actInWater_;
-								actInWater_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
-								actInWater_->SetActorHiddenInGame(true);
+								//m_StartBlock.Tonosama = act_;
+								m_StartBlock.TonosamaBP = actBP_;
+								//act_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
+								actBP_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
+								//m_StartBlock.TonosamaInWater = actInWater_;
+								//actInWater_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
+								//actInWater_->SetActorHiddenInGame(true);
 								m_StartBlock.WaterBlock = waterBlock_;
 								waterBlock_->SetMovePossibility(false);
 								waterBlock_->SetActorHiddenInGame(true);
@@ -217,18 +266,20 @@ void AGameManager::BeginPlay()
 						break;
 						case (int)EBlockType::EGoal:
 						{
-							APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y+5, z), FRotator(0, 0, 0));
-							APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+							//APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+							//APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+							AOtamago* actBP_ = GetWorld()->SpawnActor<AOtamago>(m_TamagoBPRef, FVector(x, y + 5, z), FRotator(0, 0, 0));
 							ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
-							if (tamago_ && otama_ && waterBlock_)
+							if (/*tamago_ && otama_ &&*/actBP_ && waterBlock_)
 							{
 								//	ゴールの情報を保持
 								m_iGoalNum++;
 								FBlockInfo bInfo;
 								bInfo.col = col; bInfo.row = row;
-								bInfo.Tamago = tamago_;
-								bInfo.Otama = otama_;
-								bInfo.Otama->SetActorHiddenInGame(true);
+								bInfo.TamagoBP = actBP_;
+								//bInfo.Tamago = tamago_;
+								//bInfo.Otama = otama_;
+								//bInfo.Otama->SetActorHiddenInGame(true);
 								bInfo.WaterBlock = waterBlock_;
 								waterBlock_->SetMovePossibility(false);
 								waterBlock_->SetActorHiddenInGame(false);
@@ -412,7 +463,7 @@ void AGameManager::BeginPlay()
 	}
 
 	//	トノサマと水ブロックが隣接しているかチェック
-	CheckWaterBlockAroundTonosama();
+	//CheckWaterBlockAroundTonosama();
 
 
 	UE_LOG(LogTemp, Warning, TEXT("GameManager Finish BeginPlay()."));
@@ -511,13 +562,28 @@ int AGameManager::GetStageStatus(int col, int row) const
 
 //-------------------------------------------------------------
 // Name: SetStageStatus()
-// Desc: 
+// Desc: ブロック移動後に呼ばれるので、ここでカエルを泳がせる処理も行う
 //-------------------------------------------------------------
 void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
 {
 	if (0 <= col && m_iCol > col && 0 <= row && m_iRow > row)
 	{
-		m_StageArray[row*m_iCol + col] = (int)bt;
+		int index_ = row * m_iCol + col;
+		int current_ = m_StageArray[index_];
+
+		if (current_ == (int)EBlockType::EStart)
+		{
+			m_StageArray[index_] = (int)EBlockType::EStartWithWater;
+			ChangeOtonosamaState(true);
+		}
+		else if (current_ == (int)EBlockType::EStartWithWater)
+		{
+			m_StageArray[index_] = (int)EBlockType::EStart;
+		}
+		else
+		{
+			m_StageArray[index_] = (int)bt;
+		}
 	}
 }
 
@@ -546,14 +612,14 @@ void AGameManager::CheckClear()
 	if (m_iGoalNum == m_iClearedGoalNum)
 		return;
 
-	if (m_StartBlock.TonosamaInWater->bHidden)
+	if (/*m_StartBlock.TonosamaInWater->bHidden*/m_StartBlock.bInWater == false)
 		return;
 
 	int count = 0;
 	for (auto goal : m_GoalBlockArray)
 	{
 		//	すでに一度繋がっていた場合
-		if (!goal.Otama->bHidden)
+		if (/*!goal.Otama->bHidden*/goal.bClear)
 		{
 			count++;
 		}
@@ -564,10 +630,11 @@ void AGameManager::CheckClear()
 
 			if (CheckBlock(goal.col, goal.row, map, true))
 			{
-				if (goal.Otama->bHidden)
+				if (/*goal.Otama->bHidden*/!goal.bClear)
 				{
-					goal.Tamago->SetActorHiddenInGame(true);
-					goal.Otama->SetActorHiddenInGame(false);
+					goal.bClear = true;
+					//goal.Tamago->SetActorHiddenInGame(true);
+					//goal.Otama->SetActorHiddenInGame(false);
 					goal.WaterBlock->SetActorHiddenInGame(false);
 				}
 				count++;
@@ -608,7 +675,7 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 	if (x < 0 || x > m_iCol-1 || y < 0 || y > m_iRow-1 || map[x + m_iCol * y] != 0)
 		return false;
 
-	if (m_StageArray[x + m_iCol * y] == (int)EBlockType::EStart)
+	if (m_StageArray[x + m_iCol * y] == (int)EBlockType::EStartWithWater)
 		return true;
 
 	if (!bFirstCheck)
@@ -686,26 +753,37 @@ void AGameManager::CheckWaterBlockAroundTonosama()
 	RESULT:
 	if (bWaterBlock)
 	{
-		if (m_StartBlock.WaterBlock->bHidden)
-		{
-			m_StartBlock.WaterBlock->SetActorHiddenInGame(false);
-			m_StartBlock.Tonosama->SetActorHiddenInGame(true);
-			m_StartBlock.TonosamaInWater->SetActorHiddenInGame(false);
-		}
+		ChangeOtonosamaState(true);
 	}
 	else
 	{
-		if (!m_StartBlock.WaterBlock->bHidden)
-		{
-			m_StartBlock.WaterBlock->SetActorHiddenInGame(true);
-			m_StartBlock.Tonosama->SetActorHiddenInGame(false);
-			m_StartBlock.TonosamaInWater->SetActorHiddenInGame(true);
-		}
+		ChangeOtonosamaState(false);
 	}
 }
 
 
 
+//-------------------------------------------------------------
+// Name: ChangeOtonosamaState()
+// Desc: 水中と非水中を切り替える
+//-------------------------------------------------------------
+void AGameManager::ChangeOtonosamaState(bool bInWater)
+{
+	if (bInWater)
+	{
+		//m_StartBlock.WaterBlock->SetActorHiddenInGame(false);
+		//m_StartBlock.Tonosama->SetActorHiddenInGame(true);
+		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(false);
+		m_StartBlock.bInWater = bInWater;
+	}
+	else
+	{
+		//m_StartBlock.WaterBlock->SetActorHiddenInGame(true);
+		//m_StartBlock.Tonosama->SetActorHiddenInGame(false);
+		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(true);
+		m_StartBlock.bInWater = bInWater;
+	}
+}
 //-------------------------------------------------------------
 // Name: IncreaseClickCount()
 // Desc: ブロックが動き終わる度に呼ばれる関数
@@ -714,7 +792,7 @@ void AGameManager::IncreaseClickCount()
 {
 	m_iClickCount++;
 	m_pWidget->UpdateClickNumText(m_iClickCount);
-	CheckWaterBlockAroundTonosama();
+	//CheckWaterBlockAroundTonosama();
 }
 
 
