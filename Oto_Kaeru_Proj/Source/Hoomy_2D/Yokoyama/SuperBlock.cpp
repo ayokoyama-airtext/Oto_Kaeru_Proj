@@ -109,15 +109,25 @@ void ASuperBlock::Tick(float DeltaTime)
 		if (m_fTimer >= m_fMoveTime)
 		{
 			int destPosStatus = m_pParent->GetStageStatus(m_iDestX + m_iMoveDirX, m_iDestY + m_iMoveDirY);
-			if (destPosStatus != -1 && destPosStatus == (int)EBlockType::EEmpty)
+			if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EStart))
 			{
-				m_iDestX += m_iMoveDirX;
-				m_iDestY += m_iMoveDirY;
-				m_fStartWorldX = m_fDestWorldX;
-				m_fStartWorldZ = m_fDestWorldZ;
-				m_fDestWorldX += BLOCK_SIZE * m_iMoveDirX;
-				m_fDestWorldZ += BLOCK_SIZE * (-m_iMoveDirY);	//	ワールド座標と配列上の座標の縦軸は反転している
-				m_fTimer -= BLOCK_MOVE_TIME;
+				//	もし今オトノサマの上にいるなら、次の移動先がEmptyでも停止する
+				if (m_pParent->GetStageStatus(m_iDestX, m_iDestY) == (int)EBlockType::EStart)
+				{
+					m_fTimer = m_fMoveTime;
+					m_bMoving = false;
+				}
+				//	移動続行
+				else 
+				{
+					m_iDestX += m_iMoveDirX;
+					m_iDestY += m_iMoveDirY;
+					m_fStartWorldX = m_fDestWorldX;
+					m_fStartWorldZ = m_fDestWorldZ;
+					m_fDestWorldX += BLOCK_SIZE * m_iMoveDirX;
+					m_fDestWorldZ += BLOCK_SIZE * (-m_iMoveDirY);	//	ワールド座標と配列上の座標の縦軸は反転している
+					m_fTimer -= BLOCK_MOVE_TIME;
+				}
 			}
 			else
 			{
@@ -195,17 +205,28 @@ void ASuperBlock::Clicked(float mouseX, float mouseZ)
 
 	int destPosStatus = m_pParent->GetStageStatus(m_iX + m_iMoveDirX, m_iY + m_iMoveDirY);
 
-	if (destPosStatus != -1 && destPosStatus == (int)EBlockType::EEmpty)
+	if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EStart))
 	{
+		//	次の移動先(配列座標)
 		m_iDestX = m_iX + m_iMoveDirX;
 		m_iDestY = m_iY + m_iMoveDirY;
+		//	次の移動先(ワールド座標)
 		m_fDestWorldX = centerX + BLOCK_SIZE * m_iMoveDirX;
 		m_fDestWorldZ = centerZ + BLOCK_SIZE * (-m_iMoveDirY);	//	ワールド座標と配列上の座標の縦軸は反転している
+		//	現在地(ワールド座標)
 		m_fStartWorldX = centerX;
 		m_fStartWorldZ = centerZ;
+
 		m_fMoveTime = BLOCK_MOVE_TIME;
 		m_bMoving = true;
 		m_fTimer = 0;
+
+		//	今オトノサマと被っているなら非水中状態に戻しておく
+		if (m_pParent->GetStageStatus(m_iX, m_iY) == (int)EBlockType::EStartWithWater)
+		{
+			m_pParent->ChangeOtonosamaState(false);
+		}
+
 		m_pParent->SetBlockMoving(true);
 	}
 }

@@ -42,6 +42,8 @@ public:
 	void ShowClearImage();
 	UFUNCTION()
 	void ShowGameOverImage();
+	UFUNCTION()
+	void SetStagePath(FString current, FString next);
 
 private:
 	//
@@ -85,6 +87,8 @@ private:
 	float	m_fImageTimer;
 	Phase	m_ePhase;
 	int		m_iClearFlag;
+	FString	currentStage;
+	FString nextStage;
 
 	//
 	//	Functions
