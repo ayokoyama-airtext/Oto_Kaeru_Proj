@@ -226,4 +226,10 @@ protected:
 	bool	m_bBlockMoving;		//	移動中のブロックがあるかどうか
 	UPROPERTY(VisibleAnywhere)
 	bool	m_bOpeningEnd;		//	オープニングが終わったかどうか
+
+	//	ゲームクリア　or ゲームオーバーレベルに渡す情報
+	UPROPERTY(EditAnywhere)
+		FString currentStage;
+	UPROPERTY(EditAnywhere)
+		FString nextStage;
 };

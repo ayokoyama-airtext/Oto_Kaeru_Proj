@@ -118,14 +118,17 @@ void UGameUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		}
 		break;
 	case EndScene:
+	{
+		FString options = "Current=" + currentStage + "?Next=" + nextStage;
 		if (m_iClearFlag)
 		{
-			UGameplayStatics::OpenLevel(world, TEXT("/Game/Working/Sugita/Map/SugiMap"));
+			UGameplayStatics::OpenLevel(world, TEXT("/Game/Working/Sugita/Map/SugiMap"), true, options);
 		}
 		else
 		{
-			UGameplayStatics::OpenLevel(world, TEXT("/Game/Working/Miyamoto/Map/MiyaMap"));
+			UGameplayStatics::OpenLevel(world, TEXT("/Game/Working/Miyamoto/Map/MiyaMap"), true, options);
 		}
+	}
 		break;
 	default:
 		break;
@@ -183,6 +186,18 @@ void UGameUserWidget::ShowClearImage()
 void UGameUserWidget::ShowGameOverImage()
 {
 	m_ePhase = GameOver;
+}
+
+
+
+//-------------------------------------------------------------
+// Name: ShowGameOverImage()
+// Desc: 
+//-------------------------------------------------------------
+void UGameUserWidget::SetStagePath(FString current, FString next)
+{
+	currentStage = current;
+	nextStage = next;
 }
 
 

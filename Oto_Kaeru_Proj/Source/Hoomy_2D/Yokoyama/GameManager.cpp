@@ -269,6 +269,7 @@ void AGameManager::BeginPlay()
 							//APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y+5, z), FRotator(0, 0, 0));
 							//APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
 							AOtamago* actBP_ = GetWorld()->SpawnActor<AOtamago>(m_TamagoBPRef, FVector(x, y + 5, z), FRotator(0, 0, 0));
+							actBP_->SetActorLocation(FVector(x, y + 5, z), false, nullptr, ETeleportType::TeleportPhysics);
 							ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
 							if (/*tamago_ && otama_ &&*/actBP_ && waterBlock_)
 							{
@@ -277,6 +278,7 @@ void AGameManager::BeginPlay()
 								FBlockInfo bInfo;
 								bInfo.col = col; bInfo.row = row;
 								bInfo.TamagoBP = actBP_;
+								actBP_->SetActorScale3D(FVector(0.7f, 1, 0.7f));
 								//bInfo.Tamago = tamago_;
 								//bInfo.Otama = otama_;
 								//bInfo.Otama->SetActorHiddenInGame(true);
@@ -459,6 +461,7 @@ void AGameManager::BeginPlay()
 		{
 			m_pWidget->AddToViewport();
 			m_pWidget->SetMaxClickNum(m_iMaxClickNum);
+			m_pWidget->SetStagePath(currentStage, nextStage);
 		}
 	}
 

@@ -3,6 +3,7 @@
 #include "Hoomy_2DGameMode.h"
 #include "Hoomy_2DCharacter.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 AHoomy_2DGameMode::AHoomy_2DGameMode()
 	:m_pCurrentWidget(nullptr)
@@ -17,6 +18,9 @@ void AHoomy_2DGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	ChangeMenuWidget(StartingWidgetClass);
+
+	currentStage = UGameplayStatics::ParseOption(OptionsString, TEXT("Current"));
+	nextStage = UGameplayStatics::ParseOption(OptionsString, TEXT("Next"));
 }
 
 

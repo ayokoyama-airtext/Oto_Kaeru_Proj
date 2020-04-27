@@ -23,6 +23,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UMG Game")
 	void ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString currentStage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString nextStage;
+
 protected:
 
 	virtual void BeginPlay() override;
