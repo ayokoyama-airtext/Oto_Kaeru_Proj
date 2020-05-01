@@ -109,7 +109,7 @@ void ASuperBlock::Tick(float DeltaTime)
 		if (m_fTimer >= m_fMoveTime)
 		{
 			int destPosStatus = m_pParent->GetStageStatus(m_iDestX + m_iMoveDirX, m_iDestY + m_iMoveDirY);
-			if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EStart))
+			if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EStart) || destPosStatus == (int)EBlockType::EWithinSong)
 			{
 				//	もし今オトノサマの上にいるなら、次の移動先がEmptyでも停止する
 				if (m_pParent->GetStageStatus(m_iDestX, m_iDestY) == (int)EBlockType::EStart)
@@ -205,7 +205,7 @@ void ASuperBlock::Clicked(float mouseX, float mouseZ)
 
 	int destPosStatus = m_pParent->GetStageStatus(m_iX + m_iMoveDirX, m_iY + m_iMoveDirY);
 
-	if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EStart))
+	if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EStart) || destPosStatus == (int)EBlockType::EWithinSong)
 	{
 		//	次の移動先(配列座標)
 		m_iDestX = m_iX + m_iMoveDirX;

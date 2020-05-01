@@ -29,6 +29,7 @@ enum class EBlockType : uint8
 	EWaterWall,
 	EStartWithWater,
 	EMax,
+	EWithinSong = 0x40,
 };
 
 
@@ -152,6 +153,9 @@ protected:
 
 	/* ブロックを一つ一つ見ていく。再帰関数 */
 	bool CheckBlock(int x, int y, int* map, bool bFirstCheck);
+
+	/* 歌範囲の設定を変更(オトノサマの周囲3マス) */
+	void ChangeBlockStateWithinSong(bool bOn);
 
 	/* トノサマの周囲の水ブロックを探索 */
 	void CheckWaterBlockAroundTonosama();

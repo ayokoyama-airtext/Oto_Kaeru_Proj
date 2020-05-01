@@ -123,7 +123,7 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 	FString OtonosamaBPPath = "Blueprint'/Game/Working/Shimada/Chara/Otosama/MyOtosama.MyOtosama'";
 	FString TamagoBPPath = "Blueprint'/Game/Working/Shimada/Chara/Otama/MyOtamago.MyOtamago'";
 	
-	for (int i = 1; i < (uint8)EBlockType::EStart; ++i)
+	for (int i = 1; i < BlockBPPathArray.Num(); ++i)
 	{
 		ConstructorHelpers::FObjectFinder<UBlueprint> BluePrintFile(*BlockBPPathArray[i]);
 		if (BluePrintFile.Object)
@@ -585,7 +585,14 @@ void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
 		}
 		else
 		{
-			m_StageArray[index_] = (int)bt;
+			if (current_ & (int)EBlockType::EWithinSong)
+			{
+				m_StageArray[index_] = (int)bt | (int)EBlockType::EWithinSong;
+			}
+			else
+			{
+				m_StageArray[index_] = (int)bt;
+			}
 		}
 	}
 }
@@ -678,12 +685,12 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 	if (x < 0 || x > m_iCol-1 || y < 0 || y > m_iRow-1 || map[x + m_iCol * y] != 0)
 		return false;
 
-	if (m_StageArray[x + m_iCol * y] == (int)EBlockType::EStartWithWater)
+	if (m_StageArray[x + m_iCol * y] == (int)EBlockType::EStartWithWater || m_StageArray[x + m_iCol * y] == ((int)EBlockType::EWater | (int)EBlockType::EWithinSong) || m_StageArray[x + m_iCol * y] == ((int)EBlockType::EWaterWall | (int)EBlockType::EWithinSong))
 		return true;
 
 	if (!bFirstCheck)
 	{
-	if (m_StageArray[x + m_iCol * y] != (int)EBlockType::EWater && m_StageArray[x + m_iCol * y] != (int)EBlockType::EWaterWall)
+	if ((m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWater && (m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWaterWall)
 		return false;
 	}
 
@@ -700,6 +707,175 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 		return true;
 		
 	return false;
+}
+
+
+
+//-------------------------------------------------------------
+// Name: ChangeBlockStateWithinSong()
+// Desc: オトノサマの周囲3マスに EBlockType::EWithinSong を設定/解除する
+//-------------------------------------------------------------
+void AGameManager::ChangeBlockStateWithinSong(bool bOn)
+{
+	int centerX_ = m_StartBlock.col;
+	int centerY_ = m_StartBlock.row;
+
+	if (bOn)
+	{
+		if (centerY_ - 2 >= 0)
+			m_StageArray[centerX_ + m_iCol * (centerY_ - 2)] |= (int)EBlockType::EWithinSong;
+
+		if (centerY_ - 1 >= 0)
+		{
+			if (centerX_ > 0 && centerX_ < m_iCol-1)
+			{
+				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
+				m_StageArray[centerX_ + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
+				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
+			}
+			else if(centerX_ == 0)
+			{
+				m_StageArray[centerX_ + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
+				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
+			}
+			else
+			{
+				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
+				m_StageArray[centerX_ + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
+			}
+		}
+
+		if (centerX_ > 1 && centerX_ < m_iCol - 2)
+		{
+			m_StageArray[centerX_ - 2 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ - 1 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ + 1 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ + 2 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+		}
+		else if (centerX_ == 1)
+		{
+			m_StageArray[centerX_ - 1 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ + 1 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ + 2 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+		}
+		else if (centerX_ == 0)
+		{
+			m_StageArray[centerX_ + 1 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ + 2 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+		}
+		else if (centerX_ == m_iCol - 2)
+		{
+			m_StageArray[centerX_ - 2 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ - 1 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ + 1 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+		}
+		else
+		{
+			m_StageArray[centerX_ - 2 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+			m_StageArray[centerX_ - 1 + m_iCol * (centerY_)] |= (int)EBlockType::EWithinSong;
+		}
+
+		if (centerY_ + 1 < m_iRow)
+		{
+			if (centerX_ > 0 && centerX_ < m_iCol - 1)
+			{
+				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ + 1)] |= (int)EBlockType::EWithinSong;
+				m_StageArray[centerX_ + m_iCol * (centerY_ + 1)] |= (int)EBlockType::EWithinSong;
+				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ + 1)] |= (int)EBlockType::EWithinSong;
+			}
+			else if (centerX_ == 0)
+			{
+				m_StageArray[centerX_ + m_iCol * (centerY_ + 1)] |= (int)EBlockType::EWithinSong;
+				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ + 1)] |= (int)EBlockType::EWithinSong;
+			}
+			else
+			{
+				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ + 1)] |= (int)EBlockType::EWithinSong;
+				m_StageArray[centerX_ + m_iCol * (centerY_ + 1)] |= (int)EBlockType::EWithinSong;
+			}
+		}
+
+		if (centerY_ + 2 < m_iRow)
+			m_StageArray[centerX_ + m_iCol * (centerY_ + 2)] |= (int)EBlockType::EWithinSong;
+	}
+	else
+	{
+		if (centerY_ - 2 >= 0)
+			m_StageArray[centerX_ + m_iCol * (centerY_ - 2)] &= ~((int)EBlockType::EWithinSong);
+
+		if (centerY_ - 1 >= 0)
+		{
+			if (centerX_ > 0 && centerX_ < m_iCol - 1)
+			{
+				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ - 1)] &= ~((int)EBlockType::EWithinSong);
+				m_StageArray[centerX_ + m_iCol * (centerY_ - 1)] &= ~((int)EBlockType::EWithinSong);
+				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ - 1)] &= ~((int)EBlockType::EWithinSong);
+			}
+			else if (centerX_ == 0)
+			{
+				m_StageArray[centerX_ + m_iCol * (centerY_ - 1)] &= ~((int)EBlockType::EWithinSong);
+				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ - 1)] &= ~((int)EBlockType::EWithinSong);
+			}
+			else
+			{
+				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ - 1)] &= ~((int)EBlockType::EWithinSong);
+				m_StageArray[centerX_ + m_iCol * (centerY_ - 1)] &= ~((int)EBlockType::EWithinSong);
+			}
+		}
+
+		if (centerX_ > 1 && centerX_ < m_iCol - 2)
+		{
+			m_StageArray[centerX_ - 2 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ - 1 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ + 1 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ + 2 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+		}
+		else if (centerX_ == 1)
+		{
+			m_StageArray[centerX_ - 1 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ + 1 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ + 2 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+		}
+		else if (centerX_ == 0)
+		{
+			m_StageArray[centerX_ + 1 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ + 2 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+		}
+		else if (centerX_ == m_iCol - 2)
+		{
+			m_StageArray[centerX_ - 2 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ - 1 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ + 1 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+		}
+		else
+		{
+			m_StageArray[centerX_ - 2 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+			m_StageArray[centerX_ - 1 + m_iCol * (centerY_)] &= ~((int)EBlockType::EWithinSong);
+		}
+
+		if (centerY_ + 1 < m_iRow)
+		{
+			if (centerX_ > 0 && centerX_ < m_iCol - 1)
+			{
+				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ + 1)] &= ~((int)EBlockType::EWithinSong);
+				m_StageArray[centerX_ + m_iCol * (centerY_ + 1)] &= ~((int)EBlockType::EWithinSong);
+				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ + 1)] &= ~((int)EBlockType::EWithinSong);
+			}
+			else if (centerX_ == 0)
+			{
+				m_StageArray[centerX_ + m_iCol * (centerY_ + 1)] &= ~((int)EBlockType::EWithinSong);
+				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ + 1)] &= ~((int)EBlockType::EWithinSong);
+			}
+			else
+			{
+				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ + 1)] &= ~((int)EBlockType::EWithinSong);
+				m_StageArray[centerX_ + m_iCol * (centerY_ + 1)] &= ~((int)EBlockType::EWithinSong);
+			}
+		}
+
+		if (centerY_ + 2 < m_iRow)
+			m_StageArray[centerX_ + m_iCol * (centerY_ + 2)] &= ~((int)EBlockType::EWithinSong);
+	}
 }
 
 
@@ -778,6 +954,7 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.Tonosama->SetActorHiddenInGame(true);
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(false);
 		m_StartBlock.bInWater = bInWater;
+		ChangeBlockStateWithinSong(bInWater);
 	}
 	else
 	{
@@ -785,6 +962,7 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.Tonosama->SetActorHiddenInGame(false);
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(true);
 		m_StartBlock.bInWater = bInWater;
+		ChangeBlockStateWithinSong(bInWater);
 	}
 }
 //-------------------------------------------------------------
