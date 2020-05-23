@@ -450,6 +450,11 @@ void AGameManager::BeginPlay()
 		{
 			APaperSpriteActor* bg_ = GetWorld()->SpawnActor<APaperSpriteActor>(m_BGBPRef, FVector(m_fWidth *0.5f, 0, m_fHeight * 0.5f), FRotator(0, 0, 0));
 		}
+
+		if (m_BGEdgeRef)
+		{
+			APaperSpriteActor* bg_ = GetWorld()->SpawnActor<APaperSpriteActor>(m_BGEdgeRef, FVector(m_fWidth *0.5f, 130.f, m_fHeight * 0.5f), FRotator(0, 0, 0));
+		}
 	}
 
 	//	Widgetを設定
@@ -499,7 +504,15 @@ void AGameManager::Tick(float DeltaTime)
 	//	クリア&ゲームオーバーチェック
 	if (!m_bClearStage && !m_bGameOver)
 	{
-		CheckClear();
+		if (m_StartBlock.bInWater)
+		{
+			CheckClear();
+		}
+		else
+		{
+			if (!m_bBlockMoving)
+				CheckClearWithoutWater();
+		}
 	}
 
 	//	ゲームオーバーチェック
@@ -616,6 +629,7 @@ void AGameManager::SetBlockStatus(int col, int row, ASuperBlock* pBlock)
 //-------------------------------------------------------------
 // Name: CheckClear()
 // Desc: ゴールブロック毎にスタートと繋がっているかチェックして、全て繋がっていたらクリア
+//		 カエルが水中にいる時の判定用で、水ブロックを介してオタマと繋がっていたらクリア判定
 //-------------------------------------------------------------
 void AGameManager::CheckClear()
 {
@@ -626,6 +640,7 @@ void AGameManager::CheckClear()
 		return;
 
 	int count = 0;
+	int *map = new int[m_iCol*m_iRow]();
 	for (auto goal : m_GoalBlockArray)
 	{
 		//	すでに一度繋がっていた場合
@@ -636,7 +651,7 @@ void AGameManager::CheckClear()
 		//	まだ一度もつながっていない場合
 		else
 		{
-			int *map = new int[m_iCol*m_iRow]();
+			memset(map, 0, sizeof(int) * (m_iCol*m_iRow));
 
 			if (CheckBlock(goal.col, goal.row, map, true))
 			{
@@ -659,9 +674,9 @@ void AGameManager::CheckClear()
 				}
 			}*/
 
-			delete[]map;
 		}
 	}
+	delete[]map;
 	m_iClearedGoalNum = count;
 
 	if (m_iGoalNum == m_iClearedGoalNum)
@@ -706,6 +721,108 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 	if (CheckBlock(x, y - 1, map, false))
 		return true;
 		
+	return false;
+}
+
+
+
+//-------------------------------------------------------------
+// Name: CheckClearWithoutWater()
+// Desc: ゴールブロック毎にスタートと繋がっているかチェックして、全て繋がっていたらクリア
+//		 カエルが水中にいない時の判定用で、水ブロックが間になかったらクリア判定
+//-------------------------------------------------------------
+void AGameManager::CheckClearWithoutWater()
+{
+	if (m_iGoalNum == m_iClearedGoalNum)
+		return;
+
+	if (m_StartBlock.bInWater == true)
+		return;
+
+	int count = 0;
+	for (auto goal : m_GoalBlockArray)
+	{
+		//	すでに一度繋がっていた場合
+		if (goal.bClear)
+		{
+			count++;
+		}
+		//	まだ一度もつながっていない場合
+		else
+		{
+			if (CheckBlockWithoutWater(goal.col, goal.row))
+			{
+				if (!goal.bClear)
+				{
+					goal.bClear = true;
+					goal.WaterBlock->SetActorHiddenInGame(false);
+				}
+				count++;
+			}
+		}
+	}
+	m_iClearedGoalNum = count;
+
+	if (m_iGoalNum == m_iClearedGoalNum)
+	{
+		m_bClearStage = true;
+		m_pWidget->ShowClearImage();
+		UE_LOG(LogTemp, Warning, TEXT("Stage Clear!"));
+	}
+}
+
+
+
+//-------------------------------------------------------------
+// Name: CheckBlockWithoutWater()
+// Desc: 水ブロックに塞がれずにたどりつけるかチェック
+//		 カエルとタマゴが X方向あるいはY方向の直線上にあるとき、判定を行う
+// Parm: x / タマゴのX座標(配列座標), y / タマゴのY座標(配列座標)
+//-------------------------------------------------------------
+bool AGameManager::CheckBlockWithoutWater(int x, int y)
+{
+	int curX = m_StartBlock.col;
+	int curY = m_StartBlock.row;
+	int dx = x - curX;
+	int dy = y - curY;
+
+	if (dx == 0)
+	{
+		int step = (dy > 0) ? 1 : -1;
+		bool bClear = true;
+
+		//	カエルとタマゴの間にあるマスのブロックを確認していく
+		for (int i = 0; i < dy * step - 1; ++i)
+		{
+			curY += step;
+			if (m_StageArray[curX + m_iCol * curY] != (int)EBlockType::EEmpty)
+			{
+				bClear = false;
+				i = dy * step;
+			}
+		}
+
+		return bClear;
+	}
+	else if (dy == 0)
+	{
+		int step = (dx > 0) ? 1 : -1;
+		bool bClear = true;
+
+		//	カエルとタマゴの間にあるマスのブロックを確認していく
+		for (int i = 0; i < dx * step - 1; ++i)
+		{
+			curX += step;
+			if (m_StageArray[curX + m_iCol * curY] != (int)EBlockType::EEmpty)
+			{
+				bClear = false;
+				i = dy * step;
+			}
+		}
+
+		return bClear;
+	}
+
 	return false;
 }
 

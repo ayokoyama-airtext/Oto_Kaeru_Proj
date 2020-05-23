@@ -148,11 +148,17 @@ public:
 	void LeftClickEvent();
 
 protected:
-	/* クリアしてるかを確認 */
+	/* クリアしてるかを確認(カエルが水中にいるとき) */
 	void CheckClear();
 
 	/* ブロックを一つ一つ見ていく。再帰関数 */
 	bool CheckBlock(int x, int y, int* map, bool bFirstCheck);
+
+	/* クリアしてるかを確認(カエルが水中にいないとき) */
+	void CheckClearWithoutWater();
+
+	/* ブロックを一つ一つ見ていく(水中にいないとき用) */
+	bool CheckBlockWithoutWater(int x, int y);
 
 	/* 歌範囲の設定を変更(オトノサマの周囲3マス) */
 	void ChangeBlockStateWithinSong(bool bOn);
@@ -206,6 +212,8 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APaperSpriteActor>	m_BGBPRef;			//	背景アセットへの参照
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class APaperSpriteActor>	m_BGEdgeRef;
 	UPROPERTY(VisibleAnywhere)
 	TArray<TSubclassOf<class ASuperBlock>>	m_BlocksRefArray;	//	ブロックアセットへの参照
 
