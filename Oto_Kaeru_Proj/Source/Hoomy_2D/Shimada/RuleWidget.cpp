@@ -11,7 +11,8 @@
 
 
 // コンストラクタ
-URuleWidget::URuleWidget(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer), bClickFlag(false), ButtonNum(0), bEndFlag(false), PanelPosX(0), PanelPosY(0)
+URuleWidget::URuleWidget(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer), bClickFlag(false), ButtonNum(0), bEndFlag(false), PanelPosX(0), PanelPosY(0), bFadeFlag(true), bInFade(true), fAlpha(1.0)
 {
 	m_pCButton = Prev;
 
@@ -59,6 +60,9 @@ URuleWidget::URuleWidget(const FObjectInitializer& ObjectInitializer) :Super(Obj
 void URuleWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
+
+	m_pFadeImage = Cast<UImage>(GetWidgetFromName("FadeImage"));
+	m_pFadeImage->SetRenderOpacity(fAlpha);
 
 	/*
 	// 各widget継承
@@ -112,6 +116,9 @@ void URuleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
+	if (bInFade)
+		bFadeFlag = ChangeAlpha(m_pFadeImage, bFadeFlag);
+
 	if (bClickFlag)
 		MoveAnim();
 
@@ -126,7 +133,7 @@ void URuleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	UButton* _pButtonEndTex = Cast<UButton>(GetWidgetFromName("EndButton"));
 
 	// クリック
-	if (!bClickFlag) {
+	if (!bClickFlag && !bInFade) {
 		// Next
 		if (_pButtonNTex) {
 			if (!_pButtonNTex->OnClicked.IsBound()) {
@@ -144,10 +151,13 @@ void URuleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		// End
 		if (_pButtonEndTex) {
 			if (!_pButtonEndTex->OnClicked.IsBound()) {
-				// デリゲート追加
-				_pButtonEndTex->OnClicked.AddDynamic(this, &URuleWidget::EndLevel);
+				_pButtonEndTex->OnClicked.AddDynamic(this, &URuleWidget::TrueFlag);
 			}
 		}
+	}
+
+	if (bEndFlag) {
+		EndLevel();
 	}
 
 }
@@ -174,6 +184,7 @@ void URuleWidget::MoveAnim()
 			UE_LOG(LogTemp, Log, TEXT("Ok"));
 		}
 		else {
+			//PanelPosX = 1.0f;
 			bClickFlag = false;
 			UE_LOG(LogTemp, Log, TEXT("No"));
 		}
@@ -193,7 +204,52 @@ void URuleWidget::MoveAnim()
 	}
 
 }
+
 void URuleWidget::EndLevel()
 {
 	UGameplayStatics::OpenLevel(this, TEXT("/Game/Working/Shimada/Map/Title"));
+}
+
+void URuleWidget::TrueFlag()
+{
+	UE_LOG(LogTemp, Log, TEXT("入った"));
+
+	// ポジション変更
+	UCanvasPanel* FadePanelWidget = Cast<UCanvasPanel>(GetWidgetFromName("FadePanel"));
+	UCanvasPanelSlot* FadeCanvasPanelSlot = Cast<UCanvasPanelSlot>(FadePanelWidget->Slot);
+	FadeCanvasPanelSlot->SetPosition(FVector2D(0.0, 0.0));
+
+	bInFade = true;
+}
+
+bool URuleWidget::ChangeAlpha(UImage* Image, bool FadeFlag)
+{
+	if (FadeFlag) {
+		if (fAlpha > 0.0)
+			fAlpha -= 0.01;
+		else {
+			UE_LOG(LogTemp, Log, TEXT("toumei"));
+			// ポジション変更
+			UCanvasPanel* FadePanelWidget = Cast<UCanvasPanel>(GetWidgetFromName("FadePanel"));
+			UCanvasPanelSlot* FadeCanvasPanelSlot = Cast<UCanvasPanelSlot>(FadePanelWidget->Slot);
+			FadeCanvasPanelSlot->SetPosition(FVector2D(-1920.0, 0.0));
+
+			bInFade = false;
+			return false;
+		}
+	}
+	else {
+		if (fAlpha < 1.0)
+			fAlpha += 0.01;
+		else {
+			UE_LOG(LogTemp, Log, TEXT("kuro"));
+			bInFade = false;
+			bEndFlag = true;
+			return true;
+		}
+	}
+
+	m_pFadeImage->SetRenderOpacity(fAlpha);
+
+	return FadeFlag;
 }

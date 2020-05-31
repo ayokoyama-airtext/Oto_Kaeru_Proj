@@ -28,10 +28,6 @@ class HOOMY_2D_API URuleWidget : public UUserWidget
 public:
 	URuleWidget(const FObjectInitializer& ObjectInitializer);
 
-	// Exitフラグ
-	UPROPERTY()
-		bool bEndFlag;
-
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Test")
 		void TestClicked() { UE_LOG(LogTemp, Log, TEXT("Clicked")); }
@@ -39,8 +35,8 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Change")
 		void ChangeClick();
 
-	UFUNCTION(BlueprintCallable, Category = "End")
-		void EndLevel();
+	UFUNCTION(BlueprintCallable, Category = "True")
+		void TrueFlag();
 
 protected:
 	// 初期化
@@ -53,6 +49,7 @@ protected:
 	virtual void NativeDestruct() override;
 
 	void MoveAnim();
+	void EndLevel();
 
 	/*
 	// テクスチャ
@@ -77,5 +74,17 @@ protected:
 	float PanelPosY;
 
 	ClickButton m_pCButton;
+
+private:
+
+	UPROPERTY()
+		class UImage* m_pFadeImage;
+	// Exitフラグ
+	bool bEndFlag;
+	bool bFadeFlag;
+	bool bInFade;
+	float fAlpha;
+
+	bool ChangeAlpha(class UImage* Image, bool FadeFlag);
 
 };
