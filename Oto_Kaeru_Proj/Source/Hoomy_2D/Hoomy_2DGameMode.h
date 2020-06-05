@@ -29,6 +29,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString nextStage;
 
+	UFUNCTION(BlueprintCallable)
+		FString GetCurrentStage() { return currentStage; }
+
+	UFUNCTION(BlueprintCallable)
+		FString GetNextStage() { return nextStage; }
+
 protected:
 
 	virtual void BeginPlay() override;

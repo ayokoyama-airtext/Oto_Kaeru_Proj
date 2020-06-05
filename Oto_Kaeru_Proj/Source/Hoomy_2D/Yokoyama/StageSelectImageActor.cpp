@@ -6,6 +6,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "PaperSprite.h"
 #include "Paper2D/Classes/PaperSpriteComponent.h"
+#include "StageSelectManager.h"
 
 
 //-------------------------------------------------------------
@@ -13,7 +14,7 @@
 // Desc: Ctor
 //-------------------------------------------------------------
 AStageSelectImageActor::AStageSelectImageActor(const FObjectInitializer& ObjectInitializer)
-	:APaperSpriteActor(ObjectInitializer), m_LoadMapPath(""), m_bCursorOver(false), m_bCursorEnd(false), m_fTimer(0),m_fExpansionRate(1.0f), m_fMatParamAmount(0.06f),m_pMaterial_Instance(nullptr), m_fDefaultYCoord(360.f), m_fExpansionYCoord(400.f), m_pStageNameActor(nullptr)
+	:APaperSpriteActor(ObjectInitializer), m_LoadMapPath(""), m_bCursorOver(false), m_bCursorEnd(false), m_fTimer(0),m_fExpansionRate(1.0f), m_fMatParamAmount(0.06f),m_pMaterial_Instance(nullptr), m_fDefaultYCoord(360.f), m_fExpansionYCoord(400.f), m_pStageNameActor(nullptr), m_pManager(nullptr)
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -169,6 +170,10 @@ void AStageSelectImageActor::Clicked(UPrimitiveComponent* TouchedComponent, FKey
 	UE_LOG(LogTemp, Warning, TEXT("Clicked Event!"));
 	if (!m_LoadMapPath.IsEmpty())
 	{
-		UGameplayStatics::OpenLevel(this, FName(*m_LoadMapPath));
+		//UGameplayStatics::OpenLevel(this, FName(*m_LoadMapPath));
+		if (m_pManager)
+		{
+			m_pManager->StartLoadMap(m_LoadMapPath);
+		}
 	}
 }
