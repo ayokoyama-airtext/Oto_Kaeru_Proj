@@ -31,9 +31,6 @@ protected:
 	// アニメーション切替用
 	void UpdateAnimation();
 
-	// 水ブロックに入った時
-	void Otama();
-
 	void UpdateCharacter();
 
 public:
@@ -41,4 +38,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	int nOtamaPattern;
+
+	// 水ブロックに入った時
+	void Otama();
+
 };

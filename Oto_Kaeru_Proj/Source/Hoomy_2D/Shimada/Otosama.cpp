@@ -60,19 +60,23 @@ void AOtosama::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UpdateCharacter();
+	//UpdateCharacter();
 }
 
 void AOtosama::InWater()
 {
 	GetSprite()->SetFlipbook(SwimmingAnimation);
+}
 
+void AOtosama::OutWater()
+{
+	GetSprite()->SetFlipbook(NotSwimmingAnimation);
 }
 
 void AOtosama::UpdateCharacter()
 {
 	//! アニメーション切替
-	UpdateAnimation();
+	//UpdateAnimation();
 
 	// ほかの処理を書くなら
 }
