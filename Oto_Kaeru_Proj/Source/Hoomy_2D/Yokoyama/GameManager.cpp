@@ -47,6 +47,7 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 										"/Game/Working/Yokoyama/BP/WallBlockBP",
 										"/Game/Working/Yokoyama/BP/WaterBlockBP",
 										};
+	FString	StoneBlockBPPath = "/Game/Working/Yokoyama/BP/StoneBlockBP";
 	FString TonosamaPath = "/Game/Working/Yokoyama/BP/ANotInFlipBook_BP";
 	FString TonosamaInWaterPath = "/Game/Working/Yokoyama/BP/AInFlipBook_BP";
 	FString TamagoPath = "/Game/Working/Yokoyama/BP/TamagoFlipbook_BP";
@@ -63,6 +64,14 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 			m_BlocksRefArray[i] = (UClass*)BluePrintFile.Class;
 		}
 	}
+	{
+		ConstructorHelpers::FClassFinder<ASuperBlock>	BPFile(*StoneBlockBPPath);
+		if (BPFile.Class)
+		{
+			m_BlocksRefArray[(int)EBlockType::EStone] = (UClass*)BPFile.Class;
+		}
+	}
+
 	{
 		ConstructorHelpers::FClassFinder<UBlueprint> BluePrintFile(*TonosamaPath);
 		if (BluePrintFile.Class)
@@ -114,6 +123,7 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 										"Blueprint'/Game/Working/Yokoyama/BP/WallBlockBP.WallBlockBP'",
 										"Blueprint'/Game/Working/Yokoyama/BP/WaterBlockBP.WaterBlockBP'",
 										 };
+	FString	StoneBlockBPPath = "Blueprint'/Game/Working/Yokoyama/BP/StoneBlockBP.StoneBlockBP'";
 	FString TonosamaPath = "Blueprint'/Game/Working/Yokoyama/BP/ANotInFlipBook_BP.ANotInFlipBook_BP'";
 	FString TonosamaInWaterPath = "Blueprint'/Game/Working/Yokoyama/BP/AInFlipBook_BP.AInFlipBook_BP'";
 
@@ -129,6 +139,13 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 		if (BluePrintFile.Object)
 		{
 			m_BlocksRefArray[i] = (UClass*)BluePrintFile.Object->GeneratedClass;
+		}
+	}
+	{
+		ConstructorHelpers::FObjectFinder<UBlueprint>	BPFile(*StoneBlockBPPath);
+		if (BPFile.Object)
+		{
+			m_BlocksRefArray[(int)EBlockType::EStone] = (UClass*)BPFile.Object->GeneratedClass;
 		}
 	}
 
@@ -299,6 +316,18 @@ void AGameManager::BeginPlay()
 								block_->SetPosition(col, row);
 								block_->SetParent(this);
 								block_->SetMoveInfo(L' ');
+							}
+						}
+						break;
+						case (int)EBlockType::EStone:
+						{
+							ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EStone], FVector(x, y, z), FRotator(0, 0, 0));
+							if (block_)
+							{
+								m_BlockArray[i] = block_;
+								block_->SetPosition(col, row);
+								block_->SetParent(this);
+								block_->SetMoveInfo(*(wchar_ + 1));
 							}
 						}
 						break;
