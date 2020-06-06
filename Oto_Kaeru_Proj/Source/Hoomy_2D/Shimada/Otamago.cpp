@@ -9,7 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 
-AOtamago::AOtamago() : nOtamaPattern(0)
+AOtamago::AOtamago() : nOtamaPattern(1)
 {
 	// もし移動させるときヨーが移動しないように
 	bUseControllerRotationPitch = false;
@@ -36,6 +36,8 @@ AOtamago::AOtamago() : nOtamaPattern(0)
 	// Spriteコンポーネントでレプリケーションを有効にして、ネットワーク化されたときにアニメーションが表示させる
 	GetSprite()->SetIsReplicated(true);
 	bReplicates = true;
+
+	GetSprite()->SetFlipbook(OtamagoAnimation);
 }
 
 void AOtamago::UpdateAnimation()

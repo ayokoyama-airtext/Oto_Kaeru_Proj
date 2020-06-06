@@ -39,5 +39,6 @@ protected:
 public:
 	AOtamago();
 
+	UPROPERTY(VisibleAnywhere)
 	int nOtamaPattern;
 };

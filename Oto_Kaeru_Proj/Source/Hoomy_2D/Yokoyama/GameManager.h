@@ -230,7 +230,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<class AOtosama>	m_TonosamaBPRef;
 	UPROPERTY(VisibleAnywhere)
+	class AOtosama*				m_pTonosama;			//	Otonosamaインスタンスのポインタ
+	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<class AOtamago>		m_TamagoBPRef;
+	UPROPERTY(VisibleAnywhere)
+	class AOtamago*				m_pTamago;				//	Tamagoインスタンスのポインタ
 
 	UPROPERTY(VisibleAnywhere)
 	class ACameraActor*		m_pCamera;	//	ワールドのカメラ
