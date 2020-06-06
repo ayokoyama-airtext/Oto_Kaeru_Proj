@@ -19,6 +19,7 @@
 #include "GameUserWidget.h"
 #include "Shimada/Otosama.h"
 #include "Shimada/Otamago.h"
+#include "MyEffectManager.h"
 
 //-------------------------------------------------------------
 // Static Fields Init
@@ -788,6 +789,11 @@ void AGameManager::CheckClearWithoutWater()
 					goal.TamagoBP->Otama();
 					goal.bClear = true;
 					goal.WaterBlock->SetActorHiddenInGame(false);
+					//	エフェクト
+					float x_ = goal.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+					float z_ = m_fHeight - (goal.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+					float y_ = BLOCK_Y_COORD;
+					AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterSprush, FVector(x_, y_, z_), FRotator::ZeroRotator);
 				}
 				count++;
 			}
@@ -1103,6 +1109,7 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.Tonosama->SetActorHiddenInGame(true);
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(false);
 		m_StartBlock.bInWater = bInWater;
+		m_StartBlock.TonosamaBP->InWater();
 		ChangeBlockStateWithinSong(bInWater);
 	}
 	else
@@ -1111,6 +1118,7 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.Tonosama->SetActorHiddenInGame(false);
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(true);
 		m_StartBlock.bInWater = bInWater;
+		m_StartBlock.TonosamaBP->OutWater();
 		ChangeBlockStateWithinSong(bInWater);
 	}
 }
