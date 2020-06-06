@@ -51,6 +51,7 @@ void AOtamago::UpdateAnimation()
 	{
 		GetSprite()->SetFlipbook(DesiredAnimation);
 	}
+
 }
 
 /*
@@ -60,7 +61,7 @@ void AOtamago::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UpdateCharacter();
+	//UpdateCharacter();
 }
 
 void AOtamago::Otama()

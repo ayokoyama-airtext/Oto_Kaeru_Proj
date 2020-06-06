@@ -499,11 +499,6 @@ void AGameManager::BeginPlay()
 		}
 	}
 
-	// 殿様
-	m_pTonosama = Cast<AOtosama>(m_TonosamaBPRef);
-	// たまご様のおなーりー
-	m_pTamago = Cast<AOtamago>(m_TamagoBPRef);
-
 	//	トノサマと水ブロックが隣接しているかチェック
 	//CheckWaterBlockAroundTonosama();
 
@@ -624,6 +619,7 @@ void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
 		if (current_ == (int)EBlockType::EStart)
 		{
 			m_StageArray[index_] = (int)EBlockType::EStartWithWater;
+			
 			ChangeOtonosamaState(true);
 		}
 		else if (current_ == (int)EBlockType::EStartWithWater)
@@ -691,6 +687,7 @@ void AGameManager::CheckClear()
 			{
 				if (/*goal.Otama->bHidden*/!goal.bClear)
 				{
+					goal.TamagoBP->Otama();
 					goal.bClear = true;
 					//goal.Tamago->SetActorHiddenInGame(true);
 					//goal.Otama->SetActorHiddenInGame(false);
@@ -788,6 +785,7 @@ void AGameManager::CheckClearWithoutWater()
 			{
 				if (!goal.bClear)
 				{
+					goal.TamagoBP->Otama();
 					goal.bClear = true;
 					goal.WaterBlock->SetActorHiddenInGame(false);
 				}
@@ -1105,7 +1103,6 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.Tonosama->SetActorHiddenInGame(true);
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(false);
 		m_StartBlock.bInWater = bInWater;
-		//m_pTonosama->nOtsamaPattern = 0;
 		ChangeBlockStateWithinSong(bInWater);
 	}
 	else
@@ -1114,7 +1111,6 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.Tonosama->SetActorHiddenInGame(false);
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(true);
 		m_StartBlock.bInWater = bInWater;
-		//m_pTonosama->nOtsamaPattern = 1;
 		ChangeBlockStateWithinSong(bInWater);
 	}
 }
