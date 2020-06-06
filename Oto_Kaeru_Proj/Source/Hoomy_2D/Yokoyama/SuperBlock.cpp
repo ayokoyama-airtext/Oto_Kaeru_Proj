@@ -109,17 +109,41 @@ void ASuperBlock::Tick(float DeltaTime)
 		if (m_fTimer >= m_fMoveTime)
 		{
 			int destPosStatus = m_pParent->GetStageStatus(m_iDestX + m_iMoveDirX, m_iDestY + m_iMoveDirY);
-			if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EStart) || destPosStatus == (int)EBlockType::EWithinSong)
+			//	水ブロックの場合
+			if (m_eBlockType == EBlockType::EWater)
 			{
-				//	もし今オトノサマの上にいるなら、次の移動先がEmptyでも停止する
-				if (m_pParent->GetStageStatus(m_iDestX, m_iDestY) == (int)EBlockType::EStart)
+				if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EStart) || destPosStatus == (int)EBlockType::EWithinSong)
+				{
+					//	もし今オトノサマの上にいるなら、次の移動先がEmptyでも停止する
+					if (m_pParent->GetStageStatus(m_iDestX, m_iDestY) == (int)EBlockType::EStart)
+					{
+						m_fTimer = m_fMoveTime;
+						m_bMoving = false;
+					}
+					//	移動続行
+					else 
+					{
+						m_iDestX += m_iMoveDirX;
+						m_iDestY += m_iMoveDirY;
+						m_fStartWorldX = m_fDestWorldX;
+						m_fStartWorldZ = m_fDestWorldZ;
+						m_fDestWorldX += BLOCK_SIZE * m_iMoveDirX;
+						m_fDestWorldZ += BLOCK_SIZE * (-m_iMoveDirY);	//	ワールド座標と配列上の座標の縦軸は反転している
+						m_fTimer -= BLOCK_MOVE_TIME;
+					}
+				}
+				else
 				{
 					m_fTimer = m_fMoveTime;
 					m_bMoving = false;
 				}
-				//	移動続行
-				else 
+			}
+			//	石ブロックの場合
+			else
+			{
+				if (destPosStatus != -1 && (destPosStatus == (int)EBlockType::EEmpty || destPosStatus == (int)EBlockType::EWithinSong))
 				{
+					//	移動続行
 					m_iDestX += m_iMoveDirX;
 					m_iDestY += m_iMoveDirY;
 					m_fStartWorldX = m_fDestWorldX;
@@ -128,11 +152,11 @@ void ASuperBlock::Tick(float DeltaTime)
 					m_fDestWorldZ += BLOCK_SIZE * (-m_iMoveDirY);	//	ワールド座標と配列上の座標の縦軸は反転している
 					m_fTimer -= BLOCK_MOVE_TIME;
 				}
-			}
-			else
-			{
-				m_fTimer = m_fMoveTime;
-				m_bMoving = false;
+				else
+				{
+					m_fTimer = m_fMoveTime;
+					m_bMoving = false;
+				}
 			}
 		}
 

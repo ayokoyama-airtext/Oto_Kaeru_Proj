@@ -28,6 +28,7 @@ enum class EBlockType : uint8
 	EGoal,
 	EWaterWall,
 	EStartWithWater,
+	EStone,
 	EMax,
 	EWithinSong = 0x40,
 };
