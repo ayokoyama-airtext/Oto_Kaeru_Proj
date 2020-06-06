@@ -31,12 +31,17 @@ protected:
 	// アニメーション切替用
 	void UpdateAnimation();
 
-	// 水ブロックに入った時
-	void InWater();
-
 	void UpdateCharacter();
 
 public:
 	AOtosama();
 
+	UPROPERTY(VisibleAnywhere)
+	int nOtsamaPattern;
+
+	// 水ブロックに入った時
+	void InWater();
+
+	// 水ブロックから出たとき
+	void OutWater();
 };

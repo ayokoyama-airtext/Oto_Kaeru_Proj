@@ -9,7 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 
-AOtosama::AOtosama()
+AOtosama::AOtosama() : nOtsamaPattern(1)
 {
 	// もし移動させるときヨーが移動しないように
 	bUseControllerRotationPitch = false;
@@ -36,15 +36,17 @@ AOtosama::AOtosama()
 	// Spriteコンポーネントでレプリケーションを有効にして、ネットワーク化されたときにアニメーションが表示させる
 	GetSprite()->SetIsReplicated(true);
 	bReplicates = true;
+
+	GetSprite()->SetFlipbook(NotSwimmingAnimation);
 }
 
 void AOtosama::UpdateAnimation()
 {
-	const FVector PlayerVelocity = GetVelocity();
-	const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
+	//const FVector PlayerVelocity = GetVelocity();
+	//const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
 
 	// 状態をNotSwimにする
-	UPaperFlipbook* DesiredAnimation = (PlayerSpeedSqr > 0.0f) ? NotSwimmingAnimation : SwimmingAnimation;
+	UPaperFlipbook* DesiredAnimation = (nOtsamaPattern > 0) ? NotSwimmingAnimation : SwimmingAnimation;
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
 	{
 		GetSprite()->SetFlipbook(DesiredAnimation);
@@ -58,19 +60,23 @@ void AOtosama::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UpdateCharacter();
+	//UpdateCharacter();
 }
 
 void AOtosama::InWater()
 {
 	GetSprite()->SetFlipbook(SwimmingAnimation);
+}
 
+void AOtosama::OutWater()
+{
+	GetSprite()->SetFlipbook(NotSwimmingAnimation);
 }
 
 void AOtosama::UpdateCharacter()
 {
 	//! アニメーション切替
-	UpdateAnimation();
+	//UpdateAnimation();
 
 	// ほかの処理を書くなら
 }

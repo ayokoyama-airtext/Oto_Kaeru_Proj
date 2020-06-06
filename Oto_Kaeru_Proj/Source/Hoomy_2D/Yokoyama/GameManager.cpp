@@ -619,6 +619,7 @@ void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
 		if (current_ == (int)EBlockType::EStart)
 		{
 			m_StageArray[index_] = (int)EBlockType::EStartWithWater;
+			
 			ChangeOtonosamaState(true);
 		}
 		else if (current_ == (int)EBlockType::EStartWithWater)
@@ -686,6 +687,7 @@ void AGameManager::CheckClear()
 			{
 				if (/*goal.Otama->bHidden*/!goal.bClear)
 				{
+					goal.TamagoBP->Otama();
 					goal.bClear = true;
 					//goal.Tamago->SetActorHiddenInGame(true);
 					//goal.Otama->SetActorHiddenInGame(false);
@@ -783,6 +785,7 @@ void AGameManager::CheckClearWithoutWater()
 			{
 				if (!goal.bClear)
 				{
+					goal.TamagoBP->Otama();
 					goal.bClear = true;
 					goal.WaterBlock->SetActorHiddenInGame(false);
 				}

@@ -9,7 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 
-AOtamago::AOtamago()
+AOtamago::AOtamago() : nOtamaPattern(1)
 {
 	// もし移動させるときヨーが移動しないように
 	bUseControllerRotationPitch = false;
@@ -36,19 +36,22 @@ AOtamago::AOtamago()
 	// Spriteコンポーネントでレプリケーションを有効にして、ネットワーク化されたときにアニメーションが表示させる
 	GetSprite()->SetIsReplicated(true);
 	bReplicates = true;
+
+	GetSprite()->SetFlipbook(OtamagoAnimation);
 }
 
 void AOtamago::UpdateAnimation()
 {
-	const FVector PlayerVelocity = GetVelocity();
-	const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
+	//const FVector PlayerVelocity = GetVelocity();
+	//PlayerSpeedSqr = PlayerVelocity.SizeSquared();
 
-	// 状態をNotSwimにする
-	UPaperFlipbook* DesiredAnimation = (PlayerSpeedSqr > 0.0f) ? OtamagoAnimation : OtamaAnimation;
+	// 現在のあるべきスプライトを読み取り比較してセット
+	UPaperFlipbook* DesiredAnimation = (nOtamaPattern > 0) ? OtamagoAnimation : OtamaAnimation;
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
 	{
 		GetSprite()->SetFlipbook(DesiredAnimation);
 	}
+
 }
 
 /*
@@ -58,7 +61,7 @@ void AOtamago::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UpdateCharacter();
+	//UpdateCharacter();
 }
 
 void AOtamago::Otama()
