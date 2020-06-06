@@ -9,7 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 
-AOtamago::AOtamago()
+AOtamago::AOtamago() : nOtamaPattern(0)
 {
 	// もし移動させるときヨーが移動しないように
 	bUseControllerRotationPitch = false;
@@ -40,11 +40,11 @@ AOtamago::AOtamago()
 
 void AOtamago::UpdateAnimation()
 {
-	const FVector PlayerVelocity = GetVelocity();
-	const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
+	//const FVector PlayerVelocity = GetVelocity();
+	//PlayerSpeedSqr = PlayerVelocity.SizeSquared();
 
-	// 状態をNotSwimにする
-	UPaperFlipbook* DesiredAnimation = (PlayerSpeedSqr > 0.0f) ? OtamagoAnimation : OtamaAnimation;
+	// 現在のあるべきスプライトを読み取り比較してセット
+	UPaperFlipbook* DesiredAnimation = (nOtamaPattern > 0) ? OtamagoAnimation : OtamaAnimation;
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
 	{
 		GetSprite()->SetFlipbook(DesiredAnimation);

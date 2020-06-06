@@ -9,7 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 
-AOtosama::AOtosama()
+AOtosama::AOtosama() : nOtsamaPattern(0)
 {
 	// ‚à‚µˆÚ“®‚³‚¹‚é‚Æ‚«ƒˆ[‚ªˆÚ“®‚µ‚È‚¢‚æ‚¤‚É
 	bUseControllerRotationPitch = false;
@@ -40,11 +40,11 @@ AOtosama::AOtosama()
 
 void AOtosama::UpdateAnimation()
 {
-	const FVector PlayerVelocity = GetVelocity();
-	const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
+	//const FVector PlayerVelocity = GetVelocity();
+	//const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
 
 	// ó‘Ô‚ðNotSwim‚É‚·‚é
-	UPaperFlipbook* DesiredAnimation = (PlayerSpeedSqr > 0.0f) ? NotSwimmingAnimation : SwimmingAnimation;
+	UPaperFlipbook* DesiredAnimation = (nOtsamaPattern > 0) ? NotSwimmingAnimation : SwimmingAnimation;
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
 	{
 		GetSprite()->SetFlipbook(DesiredAnimation);

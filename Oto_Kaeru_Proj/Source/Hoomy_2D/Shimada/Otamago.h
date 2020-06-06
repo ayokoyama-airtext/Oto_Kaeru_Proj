@@ -38,4 +38,6 @@ protected:
 
 public:
 	AOtamago();
+
+	int nOtamaPattern;
 };

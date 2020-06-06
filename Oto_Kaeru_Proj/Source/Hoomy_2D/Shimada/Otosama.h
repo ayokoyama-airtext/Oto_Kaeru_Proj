@@ -39,4 +39,6 @@ protected:
 public:
 	AOtosama();
 
+	int nOtsamaPattern;
+
 };
