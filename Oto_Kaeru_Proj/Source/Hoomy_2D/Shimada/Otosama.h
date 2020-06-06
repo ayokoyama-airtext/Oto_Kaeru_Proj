@@ -39,4 +39,7 @@ protected:
 public:
 	AOtosama();
 
+	UPROPERTY(VisibleAnywhere)
+	int nOtsamaPattern;
+
 };

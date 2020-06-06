@@ -44,6 +44,8 @@ public:
 	virtual void EndCursorOver(UPrimitiveComponent* TouchedComponent);
 	UFUNCTION(BlueprintCallable)
 	virtual void Clicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed);
+	UFUNCTION(BlueprintCallable)
+	FString GetLoadMapPath() { return m_LoadMapPath; }
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -66,4 +68,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class APaperSpriteActor*		m_pStageNameActor;		//	ステージ名のSpriteActorへの参照
+
+	UPROPERTY(EditAnywhere)
+		class AStageSelectManager*	m_pManager;
 };
