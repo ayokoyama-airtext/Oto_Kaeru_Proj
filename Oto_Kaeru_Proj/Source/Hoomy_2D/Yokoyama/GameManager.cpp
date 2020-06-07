@@ -672,7 +672,7 @@ void AGameManager::CheckClear()
 
 	int count = 0;
 	int *map = new int[m_iCol*m_iRow]();
-	for (auto goal : m_GoalBlockArray)
+	for (auto& goal : m_GoalBlockArray)
 	{
 		//	‚·‚Å‚Éˆê“xŒq‚ª‚Á‚Ä‚¢‚½ê‡
 		if (/*!goal.Otama->bHidden*/goal.bClear)
@@ -777,7 +777,7 @@ void AGameManager::CheckClearWithoutWater()
 		return;
 
 	int count = 0;
-	for (auto goal : m_GoalBlockArray)
+	for (auto& goal : m_GoalBlockArray)
 	{
 		//	‚·‚Å‚Éˆê“xŒq‚ª‚Á‚Ä‚¢‚½ê‡
 		if (goal.bClear)
