@@ -672,7 +672,7 @@ void AGameManager::CheckClear()
 
 	int count = 0;
 	int *map = new int[m_iCol*m_iRow]();
-	for (auto goal : m_GoalBlockArray)
+	for (auto& goal : m_GoalBlockArray)
 	{
 		//	すでに一度繋がっていた場合
 		if (/*!goal.Otama->bHidden*/goal.bClear)
@@ -693,6 +693,11 @@ void AGameManager::CheckClear()
 					//goal.Tamago->SetActorHiddenInGame(true);
 					//goal.Otama->SetActorHiddenInGame(false);
 					goal.WaterBlock->SetActorHiddenInGame(false);
+					//	エフェクト
+					float x_ = goal.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+					float z_ = m_fHeight - (goal.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+					float y_ = BLOCK_Y_COORD;
+					AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterSprush, FVector(x_, y_, z_), FRotator::ZeroRotator);
 				}
 				count++;
 			}
@@ -772,7 +777,7 @@ void AGameManager::CheckClearWithoutWater()
 		return;
 
 	int count = 0;
-	for (auto goal : m_GoalBlockArray)
+	for (auto& goal : m_GoalBlockArray)
 	{
 		//	すでに一度繋がっていた場合
 		if (goal.bClear)
@@ -1111,6 +1116,11 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		m_StartBlock.bInWater = bInWater;
 		m_StartBlock.TonosamaBP->InWater();
 		ChangeBlockStateWithinSong(bInWater);
+		//	エフェクト
+		float x_ = m_StartBlock.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+		float z_ = m_fHeight - (m_StartBlock.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+		float y_ = BLOCK_Y_COORD + 20.f;
+		AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterDust, FVector(x_, y_, z_), FRotator(0, 0, 0), 1.5f);
 	}
 	else
 	{
@@ -1120,6 +1130,11 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		m_StartBlock.bInWater = bInWater;
 		m_StartBlock.TonosamaBP->OutWater();
 		ChangeBlockStateWithinSong(bInWater);
+		//	エフェクト
+		float x_ = m_StartBlock.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+		float z_ = m_fHeight - (m_StartBlock.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+		float y_ = BLOCK_Y_COORD + 20.f;
+		AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterDust, FVector(x_, y_, z_), FRotator(0, 0, 0), 1.5f);
 	}
 }
 //-------------------------------------------------------------
