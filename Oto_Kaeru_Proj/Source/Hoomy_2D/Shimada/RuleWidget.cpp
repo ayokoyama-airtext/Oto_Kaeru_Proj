@@ -16,6 +16,13 @@ URuleWidget::URuleWidget(const FObjectInitializer& ObjectInitializer)
 {
 	m_pCButton = Prev;
 
+	// コンストラクタ
+	//// サウンドウェーブオブジェクトを探す
+	//static ConstructorHelpers::FObjectFinder< USoundBase > find_sound(TEXT("SoundWave'/Content/Working/Soundroom/クリック'"));
+	//if (find_sound.Succeeded()) {
+	//	Sound_Obj = find_sound.Object;
+	//}
+
 	/*
 	// テクスチャデータの取得
 	static ConstructorHelpers::FObjectFinder<UTexture2D> _DataFileFTex(TEXT("/Game/MainFolder/BG/OtoTitleBG")),
@@ -165,6 +172,8 @@ void URuleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 void URuleWidget::ChangeClick()
 {
 	bClickFlag = true;
+
+	//UGameplayStatics::SpawnSound2D(GetWorld(), Sound_Obj, 1.0f, 1.0f, 0.0f, nullptr, false, false);
 
 	if (m_pCButton == Next)
 		m_pCButton = Prev;
