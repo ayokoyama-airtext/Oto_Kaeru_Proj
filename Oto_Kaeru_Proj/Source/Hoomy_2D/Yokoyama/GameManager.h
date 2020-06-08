@@ -81,6 +81,23 @@ struct FBlockInfo
 };
 
 
+USTRUCT()
+struct FAreaDisplay
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere)
+	class APaperSpriteActor*	pAreaSprite;
+
+	int	nLayer;
+
+	FAreaDisplay()
+		:pAreaSprite(nullptr), nLayer(-1)
+	{
+	}
+};
+
+
 
 //-------------------------------------------------------------
 // Name: AGameManager
@@ -167,6 +184,15 @@ protected:
 	/* トノサマの周囲の水ブロックを探索 */
 	void CheckWaterBlockAroundTonosama();
 
+	/* 範囲ブロックの位置計算とリスポーンを行う */
+	void InitAreaDisplaySprites();
+
+	/* 範囲ブロックの表示を切り替える */
+	void SwitchAreaDisplay(bool bOn);
+
+	/* 範囲ブロックを明滅させる */
+	void BreathingAreaDisplay(float deltaTime);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UStringTable	*m_pStringTable;		//	ストリングテーブルへの参照
@@ -185,6 +211,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TArray<class ASuperBlock*>	m_BlockArray;	//	スポーンしたブロックへの参照配列
 
+	float	m_fTimer;	//	タイマー
 
 	UPROPERTY(VisibleAnywhere)
 	INT			m_iGoalNum;				//	ゴールの数
@@ -205,6 +232,8 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	bool		m_bGameOver;			//	ゲームオーバーしたかどうか
 
+	int			m_iEndingPhase;			//	クリア・ゲームオーバー処理用
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class UGameUserWidget>	m_WidgetBPRef;		//	Widgetアセットへの参照
 	UPROPERTY(VisibleAnywhere)
@@ -214,7 +243,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APaperSpriteActor>	m_BGBPRef;			//	背景アセットへの参照
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class APaperSpriteActor>	m_BGEdgeRef;
+	TSubclassOf<class APaperSpriteActor>	m_BGEdgeRef;		//	枠アセットへの参照
 	UPROPERTY(VisibleAnywhere)
 	TArray<TSubclassOf<class ASuperBlock>>	m_BlocksRefArray;	//	ブロックアセットへの参照
 
@@ -245,4 +274,12 @@ protected:
 		FString currentStage;
 	UPROPERTY(EditAnywhere)
 		FString nextStage;
+
+	//	範囲表示用
+	UPROPERTY(VisibleAnywhere)
+		TArray<FAreaDisplay>	m_AreaDisplaySprites;		//	範囲表示用BP
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<class APaperSpriteActor>	m_AreaSpriteBPRef;			//	範囲表示用BPアセットへの参照
+	float	m_fBreathingTimer;		//	範囲表示点滅用タイマー
+
 };
