@@ -76,8 +76,8 @@ protected:
 	ClickButton m_pCButton;
 
 private:
-	UPROPERTY()
-		USoundBase* Sound_Obj;
+	//UPROPERTY()
+		//USoundBase* Sound_Obj;
 
 	UPROPERTY()
 		class UImage* m_pFadeImage;
