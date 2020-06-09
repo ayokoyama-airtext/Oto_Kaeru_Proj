@@ -1221,7 +1221,7 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(false);
 		m_StartBlock.bInWater = bInWater;
 		m_StartBlock.TonosamaBP->InWater();
-		ChangeBlockStateWithinSong(bInWater);
+		//ChangeBlockStateWithinSong(bInWater);
 		//	エフェクト
 		float x_ = m_StartBlock.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
 		float z_ = m_fHeight - (m_StartBlock.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
@@ -1237,7 +1237,7 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(true);
 		m_StartBlock.bInWater = bInWater;
 		m_StartBlock.TonosamaBP->OutWater();
-		ChangeBlockStateWithinSong(bInWater);
+		//ChangeBlockStateWithinSong(bInWater);
 		//	エフェクト
 		float x_ = m_StartBlock.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
 		float z_ = m_fHeight - (m_StartBlock.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
