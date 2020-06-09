@@ -14,11 +14,14 @@
 #include "Camera/CameraActor.h"
 #include "Paper2D/Classes/PaperSpriteActor.h"
 #include "Paper2D/Classes/PaperFlipbookActor.h"
+#include "Paper2D/Classes/PaperSpriteComponent.h"
 #include "SuperBlock.h"
 #include "WallBlock.h"
 #include "GameUserWidget.h"
 #include "Shimada/Otosama.h"
 #include "Shimada/Otamago.h"
+#include "MyEffectManager.h"
+#include "MyAudioManager.h"
 
 //-------------------------------------------------------------
 // Static Fields Init
@@ -32,7 +35,7 @@ AGameManager* AGameManager::instance = nullptr;
 // Desc: Ctor
 //-------------------------------------------------------------
 AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
-	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_bOpeningEnd(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0)
+	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_bOpeningEnd(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0), m_iEndingPhase(0), m_fBreathingTimer(0), m_fTimer(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -272,6 +275,7 @@ void AGameManager::BeginPlay()
 								m_StartBlock.TonosamaBP = actBP_;
 								//act_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
 								actBP_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
+								actBP_->SetActorLocation(FVector(x, y + 5, z));
 								//m_StartBlock.TonosamaInWater = actInWater_;
 								//actInWater_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
 								//actInWater_->SetActorHiddenInGame(true);
@@ -499,6 +503,10 @@ void AGameManager::BeginPlay()
 		}
 	}
 
+	//	範囲表示を用意
+	InitAreaDisplaySprites();
+	SwitchAreaDisplay(true);
+
 	//	トノサマと水ブロックが隣接しているかチェック
 	//CheckWaterBlockAroundTonosama();
 
@@ -550,12 +558,67 @@ void AGameManager::Tick(float DeltaTime)
 		if (m_iClickCount > m_iMaxClickNum)
 		{
 			m_bGameOver = true;
-			m_pWidget->ShowGameOverImage();
+			//m_pWidget->ShowGameOverImage();
 			UE_LOG(LogTemp, Warning, TEXT("GameOver!"));
 		}
 	}
 
-	
+	//	範囲表示アニメーション
+	if (!m_bClearStage && !m_bGameOver)
+	{
+		if (!m_StartBlock.bInWater)
+		{
+			BreathingAreaDisplay(DeltaTime);
+		}
+	}
+
+	//	クリア処理
+#define	WAITTIME	3.5f
+	if (m_bClearStage)
+	{
+		switch (m_iEndingPhase)
+		{
+		case 0:
+			AMyAudioManager::PlaySE(ESEID::EClearSE, 1, 1);
+			m_iEndingPhase = 1;
+			break;
+		case 1:
+			if ((m_fTimer += DeltaTime) < WAITTIME)
+				break;
+			m_fTimer = 0;
+			m_iEndingPhase = 2;
+			break;
+		case 2:
+			m_pWidget->ShowClearImage();
+			m_iEndingPhase = 3;
+			break;
+		case 3:
+			break;
+		}
+	}
+	//	ゲームオーバー処理
+	if (m_bGameOver)
+	{
+		switch (m_iEndingPhase)
+		{
+		case 0:
+			AMyAudioManager::PlaySE(ESEID::EGameOverSE, 1, 1);
+			m_iEndingPhase = 1;
+			break;
+		case 1:
+			if ((m_fTimer += DeltaTime) < WAITTIME)
+				break;
+			m_fTimer = 0;
+			m_iEndingPhase = 2;
+			break;
+		case 2:
+			m_pWidget->ShowGameOverImage();
+			m_iEndingPhase = 3;
+			break;
+		case 3:
+			break;
+		}
+	}
 }
 
 
@@ -671,7 +734,7 @@ void AGameManager::CheckClear()
 
 	int count = 0;
 	int *map = new int[m_iCol*m_iRow]();
-	for (auto goal : m_GoalBlockArray)
+	for (auto& goal : m_GoalBlockArray)
 	{
 		//	すでに一度繋がっていた場合
 		if (/*!goal.Otama->bHidden*/goal.bClear)
@@ -692,6 +755,11 @@ void AGameManager::CheckClear()
 					//goal.Tamago->SetActorHiddenInGame(true);
 					//goal.Otama->SetActorHiddenInGame(false);
 					goal.WaterBlock->SetActorHiddenInGame(false);
+					//	エフェクト
+					float x_ = goal.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+					float z_ = m_fHeight - (goal.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+					float y_ = BLOCK_Y_COORD;
+					AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterSprush, FVector(x_, y_, z_), FRotator::ZeroRotator);
 				}
 				count++;
 			}
@@ -713,7 +781,7 @@ void AGameManager::CheckClear()
 	if (m_iGoalNum == m_iClearedGoalNum)
 	{
 		m_bClearStage = true;
-		m_pWidget->ShowClearImage();
+		//m_pWidget->ShowClearImage();
 		UE_LOG(LogTemp, Warning, TEXT("Stage Clear!"));
 	}
 
@@ -771,7 +839,7 @@ void AGameManager::CheckClearWithoutWater()
 		return;
 
 	int count = 0;
-	for (auto goal : m_GoalBlockArray)
+	for (auto& goal : m_GoalBlockArray)
 	{
 		//	すでに一度繋がっていた場合
 		if (goal.bClear)
@@ -788,6 +856,11 @@ void AGameManager::CheckClearWithoutWater()
 					goal.TamagoBP->Otama();
 					goal.bClear = true;
 					goal.WaterBlock->SetActorHiddenInGame(false);
+					//	エフェクト
+					float x_ = goal.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+					float z_ = m_fHeight - (goal.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+					float y_ = BLOCK_Y_COORD;
+					AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterSprush, FVector(x_, y_, z_), FRotator::ZeroRotator);
 				}
 				count++;
 			}
@@ -798,7 +871,7 @@ void AGameManager::CheckClearWithoutWater()
 	if (m_iGoalNum == m_iClearedGoalNum)
 	{
 		m_bClearStage = true;
-		m_pWidget->ShowClearImage();
+		//m_pWidget->ShowClearImage();
 		UE_LOG(LogTemp, Warning, TEXT("Stage Clear!"));
 	}
 }
@@ -818,7 +891,51 @@ bool AGameManager::CheckBlockWithoutWater(int x, int y)
 	int dx = x - curX;
 	int dy = y - curY;
 
-	if (dx == 0)
+	if (abs(x - curX) + abs(y - curY) <= 2)
+	{
+		if (dx == 0)
+		{
+			int step = (dy > 0) ? 1 : -1;
+			bool bClear = true;
+
+			//	カエルとタマゴの間にあるマスのブロックを確認していく
+			for (int i = 0; i < dy * step - 1; ++i)
+			{
+				curY += step;
+				if (m_StageArray[curX + m_iCol * curY] != (int)EBlockType::EEmpty)
+				{
+					bClear = false;
+					i = dy * step;
+				}
+			}
+
+			return bClear;
+		}
+		else if (dy == 0)
+		{
+			int step = (dx > 0) ? 1 : -1;
+			bool bClear = true;
+
+			//	カエルとタマゴの間にあるマスのブロックを確認していく
+			for (int i = 0; i < dx * step - 1; ++i)
+			{
+				curX += step;
+				if (m_StageArray[curX + m_iCol * curY] != (int)EBlockType::EEmpty)
+				{
+					bClear = false;
+					i = dy * step;
+				}
+			}
+
+			return bClear;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	/*if (dx == 0)
 	{
 		int step = (dy > 0) ? 1 : -1;
 		bool bClear = true;
@@ -853,7 +970,7 @@ bool AGameManager::CheckBlockWithoutWater(int x, int y)
 		}
 
 		return bClear;
-	}
+	}*/
 
 	return false;
 }
@@ -1103,7 +1220,15 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.Tonosama->SetActorHiddenInGame(true);
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(false);
 		m_StartBlock.bInWater = bInWater;
+		m_StartBlock.TonosamaBP->InWater();
 		ChangeBlockStateWithinSong(bInWater);
+		//	エフェクト
+		float x_ = m_StartBlock.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+		float z_ = m_fHeight - (m_StartBlock.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+		float y_ = BLOCK_Y_COORD + 20.f;
+		AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterDust, FVector(x_, y_, z_), FRotator(0, 0, 0), 1.5f);
+		//	範囲表示
+		SwitchAreaDisplay(!bInWater);
 	}
 	else
 	{
@@ -1111,7 +1236,15 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		//m_StartBlock.Tonosama->SetActorHiddenInGame(false);
 		//m_StartBlock.TonosamaInWater->SetActorHiddenInGame(true);
 		m_StartBlock.bInWater = bInWater;
+		m_StartBlock.TonosamaBP->OutWater();
 		ChangeBlockStateWithinSong(bInWater);
+		//	エフェクト
+		float x_ = m_StartBlock.col * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+		float z_ = m_fHeight - (m_StartBlock.row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+		float y_ = BLOCK_Y_COORD + 20.f;
+		AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterDust, FVector(x_, y_, z_), FRotator(0, 0, 0), 1.5f);
+		//	範囲非表示
+		SwitchAreaDisplay(!bInWater);
 	}
 }
 //-------------------------------------------------------------
@@ -1127,12 +1260,235 @@ void AGameManager::IncreaseClickCount()
 
 
 
+
+//-------------------------------------------------------------
+// Name: InitAreaDisplaySprites()
+// Desc: 
+//-------------------------------------------------------------
+void AGameManager::InitAreaDisplaySprites()
+{
+	int centerX_ = m_StartBlock.col;
+	int centerY_ = m_StartBlock.row;
+
+	float centerWorldX_ = centerX_ * BLOCK_SIZE + BLOCK_SIZE * 0.5f;
+	float centerWorldZ_ = m_fHeight - (centerY_ * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
+
+	FAreaDisplay ad_;
+
+	if (centerY_ - 2 >= 0)
+	{
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ + BLOCK_SIZE * 2.f), FRotator(0, 0, 0));
+		ad_.nLayer = 2;
+		m_AreaDisplaySprites.Emplace(ad_);
+	}
+
+	if (centerY_ - 1 >= 0)
+	{
+		if (centerX_ > 0 && centerX_ < m_iCol - 1)
+		{
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+			
+		}
+		else if (centerX_ == 0)
+		{
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+		}
+		else
+		{
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+		}
+	}
+
+	if (centerX_ > 1 && centerX_ < m_iCol - 2)
+	{
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 2;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 1;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 1;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 2;
+		m_AreaDisplaySprites.Emplace(ad_);
+	}
+	else if (centerX_ == 1)
+	{
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 1;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 1;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 2;
+		m_AreaDisplaySprites.Emplace(ad_);
+	}
+	else if (centerX_ == 0)
+	{
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 1;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 2;
+		m_AreaDisplaySprites.Emplace(ad_);
+	}
+	else if (centerX_ == m_iCol - 2)
+	{
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 2;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 1;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 1;
+		m_AreaDisplaySprites.Emplace(ad_);
+	}
+	else
+	{
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 2;
+		m_AreaDisplaySprites.Emplace(ad_);
+
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.nLayer = 1;
+		m_AreaDisplaySprites.Emplace(ad_);
+	}
+
+	if (centerY_ + 1 < m_iRow)
+	{
+		if (centerX_ > 0 && centerX_ < m_iCol - 1)
+		{
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+		}
+		else if (centerX_ == 0)
+		{
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+		}
+		else
+		{
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.nLayer = 1;
+			m_AreaDisplaySprites.Emplace(ad_);
+		}
+	}
+
+	if (centerY_ + 2 < m_iRow)
+	{
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ - BLOCK_SIZE * 2.f), FRotator(0, 0, 0));
+		ad_.nLayer = 2;
+		m_AreaDisplaySprites.Emplace(ad_);
+	}
+}
+
+
+
+//-------------------------------------------------------------
+// Name: SwitchAreaDisplay()
+// Desc: 
+//-------------------------------------------------------------
+void AGameManager::SwitchAreaDisplay(bool bOn)
+{
+	for (auto& a : m_AreaDisplaySprites)
+	{
+		a.pAreaSprite->SetActorHiddenInGame(!bOn);
+	}
+}
+
+
+
+//-------------------------------------------------------------
+// Name: BreathingAreaDisplay()
+// Desc: 
+//-------------------------------------------------------------
+void AGameManager::BreathingAreaDisplay(float deltaTime)
+{
+#define	INTERVAL	2.0f
+#define RINTERVAL	(1.0f / INTERVAL)
+	m_fBreathingTimer += deltaTime;
+	if (m_fBreathingTimer >= INTERVAL * 2)
+	{
+		m_fBreathingTimer -= INTERVAL * 2;
+	}
+	float	rate_ = 0.f;
+
+	if (m_fBreathingTimer < INTERVAL)
+	{
+		rate_ = 0.2f + 0.6f * (m_fBreathingTimer * RINTERVAL);
+	}
+	else
+	{
+		rate_ = 0.2f + 0.6f * (INTERVAL * 2 - m_fBreathingTimer) * RINTERVAL;
+	}
+
+	for (auto &a : m_AreaDisplaySprites)
+	{
+		a.pAreaSprite->GetRenderComponent()->SetSpriteColor(FLinearColor(1, 1, 1, rate_));
+	}
+}
+
+
 //-------------------------------------------------------------
 // 入力で呼ばれる関数
 //-------------------------------------------------------------
 void AGameManager::LeftClickEvent()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Left Click!"));
+
+	AMyAudioManager::PlaySE(ESEID::EClickSE);
 
 	if (m_bClearStage || m_bGameOver || !m_bOpeningEnd)
 		return;
