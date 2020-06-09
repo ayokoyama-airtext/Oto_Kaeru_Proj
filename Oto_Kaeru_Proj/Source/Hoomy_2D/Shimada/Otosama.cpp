@@ -8,9 +8,13 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+//#include "Yokoyama/GameManager.h"
+//#include "Yokoyama/MyEffectManager.h"
 
-AOtosama::AOtosama() : nOtsamaPattern(1)
+
+AOtosama::AOtosama() : nCount(0), nOtsamaPattern(1)
 {
+
 	// Ç‡Çµà⁄ìÆÇ≥ÇπÇÈÇ∆Ç´ÉàÅ[Ç™à⁄ìÆÇµÇ»Ç¢ÇÊÇ§Ç…
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
@@ -59,6 +63,10 @@ void AOtosama::UpdateAnimation()
 void AOtosama::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (nCount % 5 == 0) {
+		//AMyEffectManager::SpawnLoopParticleEmitter(EParticleID::EOnp, FVector location, FRotator::ZeroRotator);
+	}
 
 	//UpdateCharacter();
 }

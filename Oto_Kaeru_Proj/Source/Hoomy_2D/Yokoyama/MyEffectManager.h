@@ -12,6 +12,7 @@ enum class EParticleID : uint8
 	EWaterSprush,
 	EWaterTrail,
 	EWaterDust,
+	EOnp,
 	EMax,
 };
 

@@ -19,6 +19,9 @@ class HOOMY_2D_API AOtosama : public APaperCharacter
 		UTextRenderComponent* TextComponent;
 	virtual void Tick(float DeltaSeconds) override;
 
+private:
+	int nCount;
+
 protected:
 	// 水中にいないときのアニメーション
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
@@ -37,7 +40,7 @@ public:
 	AOtosama();
 
 	UPROPERTY(VisibleAnywhere)
-	int nOtsamaPattern;
+		int nOtsamaPattern;
 
 	// 水ブロックに入った時
 	void InWater();
