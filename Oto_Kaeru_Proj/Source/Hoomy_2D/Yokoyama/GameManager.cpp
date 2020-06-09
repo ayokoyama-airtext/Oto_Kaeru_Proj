@@ -275,6 +275,7 @@ void AGameManager::BeginPlay()
 								m_StartBlock.TonosamaBP = actBP_;
 								//act_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
 								actBP_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
+								actBP_->SetActorLocation(FVector(x, y + 5, z));
 								//m_StartBlock.TonosamaInWater = actInWater_;
 								//actInWater_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
 								//actInWater_->SetActorHiddenInGame(true);
@@ -578,7 +579,7 @@ void AGameManager::Tick(float DeltaTime)
 		switch (m_iEndingPhase)
 		{
 		case 0:
-			AMyAudioManager::PlaySE(ESEID::EClearSE);
+			AMyAudioManager::PlaySE(ESEID::EClearSE, 1, 1);
 			m_iEndingPhase = 1;
 			break;
 		case 1:
@@ -601,7 +602,7 @@ void AGameManager::Tick(float DeltaTime)
 		switch (m_iEndingPhase)
 		{
 		case 0:
-			AMyAudioManager::PlaySE(ESEID::EClearSE);
+			AMyAudioManager::PlaySE(ESEID::EGameOverSE, 1, 1);
 			m_iEndingPhase = 1;
 			break;
 		case 1:
@@ -1276,7 +1277,7 @@ void AGameManager::InitAreaDisplaySprites()
 
 	if (centerY_ - 2 >= 0)
 	{
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 40, centerWorldZ_ + BLOCK_SIZE * 2.f), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ + BLOCK_SIZE * 2.f), FRotator(0, 0, 0));
 		ad_.nLayer = 2;
 		m_AreaDisplaySprites.Emplace(ad_);
 	}
@@ -1285,36 +1286,36 @@ void AGameManager::InitAreaDisplaySprites()
 	{
 		if (centerX_ > 0 && centerX_ < m_iCol - 1)
 		{
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 40, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 40, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 40, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 			
 		}
 		else if (centerX_ == 0)
 		{
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 40, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 40, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 		}
 		else
 		{
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 40, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 40, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 		}
@@ -1322,67 +1323,67 @@ void AGameManager::InitAreaDisplaySprites()
 
 	if (centerX_ > 1 && centerX_ < m_iCol - 2)
 	{
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 2;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 1;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 1;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 2;
 		m_AreaDisplaySprites.Emplace(ad_);
 	}
 	else if (centerX_ == 1)
 	{
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 1;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 1;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 2;
 		m_AreaDisplaySprites.Emplace(ad_);
 	}
 	else if (centerX_ == 0)
 	{
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 1;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 2;
 		m_AreaDisplaySprites.Emplace(ad_);
 	}
 	else if (centerX_ == m_iCol - 2)
 	{
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 2;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 1;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 1;
 		m_AreaDisplaySprites.Emplace(ad_);
 	}
 	else
 	{
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE * 2.f, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 2;
 		m_AreaDisplaySprites.Emplace(ad_);
 
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 40, centerWorldZ_), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_), FRotator(0, 0, 0));
 		ad_.nLayer = 1;
 		m_AreaDisplaySprites.Emplace(ad_);
 	}
@@ -1391,35 +1392,35 @@ void AGameManager::InitAreaDisplaySprites()
 	{
 		if (centerX_ > 0 && centerX_ < m_iCol - 1)
 		{
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 40, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 40, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 40, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 		}
 		else if (centerX_ == 0)
 		{
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 40, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 40, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 		}
 		else
 		{
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 40, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ - BLOCK_SIZE, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 
-			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 40, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
+			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ - BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
 		}
@@ -1427,7 +1428,7 @@ void AGameManager::InitAreaDisplaySprites()
 
 	if (centerY_ + 2 < m_iRow)
 	{
-		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 40, centerWorldZ_ - BLOCK_SIZE * 2.f), FRotator(0, 0, 0));
+		ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_, 59, centerWorldZ_ - BLOCK_SIZE * 2.f), FRotator(0, 0, 0));
 		ad_.nLayer = 2;
 		m_AreaDisplaySprites.Emplace(ad_);
 	}
@@ -1486,6 +1487,8 @@ void AGameManager::BreathingAreaDisplay(float deltaTime)
 void AGameManager::LeftClickEvent()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Left Click!"));
+
+	AMyAudioManager::PlaySE(ESEID::EClickSE);
 
 	if (m_bClearStage || m_bGameOver || !m_bOpeningEnd)
 		return;
