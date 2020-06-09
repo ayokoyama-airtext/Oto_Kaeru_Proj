@@ -21,6 +21,7 @@ class HOOMY_2D_API AOtosama : public APaperCharacter
 
 private:
 	FVector Otolocation;
+	int nCount;
 
 protected:
 	// 水中にいないときのアニメーション

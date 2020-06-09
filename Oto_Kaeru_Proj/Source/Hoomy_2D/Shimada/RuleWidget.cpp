@@ -176,6 +176,8 @@ void URuleWidget::ChangeClick()
 {
 	bClickFlag = true;
 
+	AMyAudioManager::PlaySE(ESEID::EClickSE);
+
 	//UGameplayStatics::SpawnSound2D(GetWorld(), Sound_Obj, 1.0f, 1.0f, 0.0f, nullptr, false, false);
 
 	if (m_pCButton == Next)
@@ -225,6 +227,8 @@ void URuleWidget::EndLevel()
 void URuleWidget::TrueFlag()
 {
 	UE_LOG(LogTemp, Log, TEXT("入った"));
+
+	AMyAudioManager::PlaySE(ESEID::EClickSE);
 
 	// ポジション変更
 	UCanvasPanel* FadePanelWidget = Cast<UCanvasPanel>(GetWidgetFromName("FadePanel"));

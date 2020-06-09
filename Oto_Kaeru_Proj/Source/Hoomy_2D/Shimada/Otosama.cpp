@@ -10,9 +10,10 @@
 #include "GameFramework/Controller.h"
 //#include "Yokoyama/GameManager.h"
 #include "Yokoyama/MyEffectManager.h"
+#include "Yokoyama/MyAudioManager.h"
 
 
-AOtosama::AOtosama() : nOtsamaPattern(1)
+AOtosama::AOtosama() : nOtsamaPattern(1), nCount(0)
 {
 
 	// ‚à‚µˆÚ“®‚³‚¹‚é‚Æ‚«ƒˆ[‚ªˆÚ“®‚µ‚È‚¢‚æ‚¤‚É
@@ -49,11 +50,15 @@ void AOtosama::UpdateAnimation()
 	//const FVector PlayerVelocity = GetVelocity();
 	//const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
 
-	// ó‘Ô‚ðNotSwim‚É‚·‚é
+	// ó‘Ô‚ðƒJƒGƒ‹
 	UPaperFlipbook* DesiredAnimation = (nOtsamaPattern > 0) ? NotSwimmingAnimation : SwimmingAnimation;
 	if (GetSprite()->GetFlipbook() != DesiredAnimation)
 	{
 		GetSprite()->SetFlipbook(DesiredAnimation);
+	}
+
+	if ((nCount % 100 == 0) && (nOtsamaPattern == 1)) {
+		AMyAudioManager::PlaySE(ESEID::EClickSE);
 	}
 }
 
