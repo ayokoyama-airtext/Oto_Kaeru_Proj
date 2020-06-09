@@ -6,15 +6,15 @@
 #include "GameFramework/Actor.h"
 #include "MyAudioManager.generated.h"
 //-------------------------------------------------------------
-#define SE_MAX_NUM	1
+#define SE_MAX_NUM	3
 #define BGM_MAX_NUM	1
 
 UENUM(BlueprintType)
 enum class ESEID : uint8
 {
 	EClearSE,
-	ESE02,
-	ESE03,
+	EGameOverSE,
+	EClickSE,
 	ESE04,
 	ESE05,
 	ESE06,
