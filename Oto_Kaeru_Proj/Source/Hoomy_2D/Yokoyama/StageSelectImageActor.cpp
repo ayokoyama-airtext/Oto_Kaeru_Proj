@@ -7,6 +7,7 @@
 #include "PaperSprite.h"
 #include "Paper2D/Classes/PaperSpriteComponent.h"
 #include "StageSelectManager.h"
+#include "MyAudioManager.h"
 
 
 //-------------------------------------------------------------
@@ -168,6 +169,7 @@ void AStageSelectImageActor::EndCursorOver(UPrimitiveComponent* TouchedComponent
 void AStageSelectImageActor::Clicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Clicked Event!"));
+	AMyAudioManager::PlaySE(ESEID::EClickSE);
 	if (!m_LoadMapPath.IsEmpty())
 	{
 		//UGameplayStatics::OpenLevel(this, FName(*m_LoadMapPath));
