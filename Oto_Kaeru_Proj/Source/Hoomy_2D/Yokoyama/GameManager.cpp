@@ -504,7 +504,7 @@ void AGameManager::BeginPlay()
 
 	//	範囲表示を用意
 	InitAreaDisplaySprites();
-	SwitchAreaDisplay(false);
+	SwitchAreaDisplay(true);
 
 	//	トノサマと水ブロックが隣接しているかチェック
 	//CheckWaterBlockAroundTonosama();
@@ -565,7 +565,7 @@ void AGameManager::Tick(float DeltaTime)
 	//	範囲表示アニメーション
 	if (!m_bClearStage && !m_bGameOver)
 	{
-		if (m_StartBlock.bInWater)
+		if (!m_StartBlock.bInWater)
 		{
 			BreathingAreaDisplay(DeltaTime);
 		}
@@ -890,7 +890,51 @@ bool AGameManager::CheckBlockWithoutWater(int x, int y)
 	int dx = x - curX;
 	int dy = y - curY;
 
-	if (dx == 0)
+	if (abs(x - curX) + abs(y - curY) <= 2)
+	{
+		if (dx == 0)
+		{
+			int step = (dy > 0) ? 1 : -1;
+			bool bClear = true;
+
+			//	カエルとタマゴの間にあるマスのブロックを確認していく
+			for (int i = 0; i < dy * step - 1; ++i)
+			{
+				curY += step;
+				if (m_StageArray[curX + m_iCol * curY] != (int)EBlockType::EEmpty)
+				{
+					bClear = false;
+					i = dy * step;
+				}
+			}
+
+			return bClear;
+		}
+		else if (dy == 0)
+		{
+			int step = (dx > 0) ? 1 : -1;
+			bool bClear = true;
+
+			//	カエルとタマゴの間にあるマスのブロックを確認していく
+			for (int i = 0; i < dx * step - 1; ++i)
+			{
+				curX += step;
+				if (m_StageArray[curX + m_iCol * curY] != (int)EBlockType::EEmpty)
+				{
+					bClear = false;
+					i = dy * step;
+				}
+			}
+
+			return bClear;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	/*if (dx == 0)
 	{
 		int step = (dy > 0) ? 1 : -1;
 		bool bClear = true;
@@ -925,7 +969,7 @@ bool AGameManager::CheckBlockWithoutWater(int x, int y)
 		}
 
 		return bClear;
-	}
+	}*/
 
 	return false;
 }
@@ -1183,7 +1227,7 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		float y_ = BLOCK_Y_COORD + 20.f;
 		AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterDust, FVector(x_, y_, z_), FRotator(0, 0, 0), 1.5f);
 		//	範囲表示
-		SwitchAreaDisplay(bInWater);
+		SwitchAreaDisplay(!bInWater);
 	}
 	else
 	{
@@ -1199,7 +1243,7 @@ void AGameManager::ChangeOtonosamaState(bool bInWater)
 		float y_ = BLOCK_Y_COORD + 20.f;
 		AMyEffectManager::SpawnOneShotParticleEmitter(EParticleID::EWaterDust, FVector(x_, y_, z_), FRotator(0, 0, 0), 1.5f);
 		//	範囲非表示
-		SwitchAreaDisplay(bInWater);
+		SwitchAreaDisplay(!bInWater);
 	}
 }
 //-------------------------------------------------------------
