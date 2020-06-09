@@ -9,10 +9,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 //#include "Yokoyama/GameManager.h"
-//#include "Yokoyama/MyEffectManager.h"
+#include "Yokoyama/MyEffectManager.h"
 
 
-AOtosama::AOtosama() : nCount(0), nOtsamaPattern(1)
+AOtosama::AOtosama() : nOtsamaPattern(1)
 {
 
 	// ‚à‚µˆÚ“®‚³‚¹‚é‚Æ‚«ƒˆ[‚ªˆÚ“®‚µ‚È‚¢‚æ‚¤‚É
@@ -64,10 +64,6 @@ void AOtosama::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (nCount % 5 == 0) {
-		//AMyEffectManager::SpawnLoopParticleEmitter(EParticleID::EOnp, FVector location, FRotator::ZeroRotator);
-	}
-
 	//UpdateCharacter();
 }
 
@@ -79,6 +75,12 @@ void AOtosama::InWater()
 void AOtosama::OutWater()
 {
 	GetSprite()->SetFlipbook(NotSwimmingAnimation);
+}
+
+void AOtosama::SetTonoPos(FVector location)
+{
+	Otolocation = location;
+	AMyEffectManager::SpawnLoopParticleEmitter(EParticleID::EOnp, Otolocation, FRotator::ZeroRotator);
 }
 
 void AOtosama::UpdateCharacter()

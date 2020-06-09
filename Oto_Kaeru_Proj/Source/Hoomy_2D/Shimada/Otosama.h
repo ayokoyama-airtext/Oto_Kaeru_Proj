@@ -20,7 +20,7 @@ class HOOMY_2D_API AOtosama : public APaperCharacter
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	int nCount;
+	FVector Otolocation;
 
 protected:
 	// 水中にいないときのアニメーション
@@ -41,6 +41,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 		int nOtsamaPattern;
+
+	// パーティクル
+	void SetTonoPos(FVector location);
 
 	// 水ブロックに入った時
 	void InWater();

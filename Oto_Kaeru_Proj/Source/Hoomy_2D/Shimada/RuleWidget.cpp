@@ -8,6 +8,9 @@
 #include "Components/CanvasPanelSlot.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "Yokoyama/MyAudioManager.h"
+//#include "ConstructorHelpers.h"
+
 
 
 // コンストラクタ
@@ -18,7 +21,7 @@ URuleWidget::URuleWidget(const FObjectInitializer& ObjectInitializer)
 
 	// コンストラクタ
 	//// サウンドウェーブオブジェクトを探す
-	//static ConstructorHelpers::FObjectFinder< USoundBase > find_sound(TEXT("SoundWave'/Content/Working/Soundroom/クリック_Cue'"));
+	//static ConstructorHelpers::FObjectFinder< USoundBase > find_sound(TEXT("SoundCue'/Game/Working/Soundroom/クリック_Cue.クリック_Cue'"));
 	//if (find_sound.Succeeded()) {
 	//	Sound_Obj = find_sound.Object;
 	//}
