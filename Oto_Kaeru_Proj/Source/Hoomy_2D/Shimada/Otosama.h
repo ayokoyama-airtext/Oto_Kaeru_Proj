@@ -22,6 +22,7 @@ class HOOMY_2D_API AOtosama : public APaperCharacter
 private:
 	FVector Otolocation;
 	int nCount;
+	bool bWaterFlag;
 
 protected:
 	// 水中にいないときのアニメーション
@@ -44,7 +45,7 @@ public:
 		int nOtsamaPattern;
 
 	// パーティクル
-	void SetTonoPos(FVector location);
+	void SetTonoPos(FVector location, bool bWatar);
 
 	// 水ブロックに入った時
 	void InWater();

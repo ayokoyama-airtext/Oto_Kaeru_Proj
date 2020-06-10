@@ -114,6 +114,8 @@ private:
 	// Singleton
 	static AGameManager*	instance;
 
+	FVector PPos;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

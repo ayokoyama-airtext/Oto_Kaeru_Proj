@@ -35,9 +35,9 @@ AGameManager* AGameManager::instance = nullptr;
 // Desc: Ctor
 //-------------------------------------------------------------
 AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
-	:AActor(ObjectInitializer),m_iCol(0),m_iRow(0), m_bBlockMoving(false), m_bOpeningEnd(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0), m_iEndingPhase(0), m_fBreathingTimer(0), m_fTimer(0)
+	:AActor(ObjectInitializer), m_iCol(0), m_iRow(0), m_bBlockMoving(false), m_bOpeningEnd(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0), m_iEndingPhase(0), m_fBreathingTimer(0), m_fTimer(0)
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
@@ -46,10 +46,10 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 #if UE_GAME
 	//	ランタイム
 	//	ブロック
-	TArray<FString>	BlockBPPathArray = {"",
+	TArray<FString>	BlockBPPathArray = { "",
 										"/Game/Working/Yokoyama/BP/WallBlockBP",
 										"/Game/Working/Yokoyama/BP/WaterBlockBP",
-										};
+	};
 	FString	StoneBlockBPPath = "/Game/Working/Yokoyama/BP/StoneBlockBP";
 	FString TonosamaPath = "/Game/Working/Yokoyama/BP/ANotInFlipBook_BP";
 	FString TonosamaInWaterPath = "/Game/Working/Yokoyama/BP/AInFlipBook_BP";
@@ -122,10 +122,10 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 #else
 	//	エディター
 	//	ブロック
-	TArray<FString>	BlockBPPathArray = {"",
+	TArray<FString>	BlockBPPathArray = { "",
 										"Blueprint'/Game/Working/Yokoyama/BP/WallBlockBP.WallBlockBP'",
 										"Blueprint'/Game/Working/Yokoyama/BP/WaterBlockBP.WaterBlockBP'",
-										 };
+	};
 	FString	StoneBlockBPPath = "Blueprint'/Game/Working/Yokoyama/BP/StoneBlockBP.StoneBlockBP'";
 	FString TonosamaPath = "Blueprint'/Game/Working/Yokoyama/BP/ANotInFlipBook_BP.ANotInFlipBook_BP'";
 	FString TonosamaInWaterPath = "Blueprint'/Game/Working/Yokoyama/BP/AInFlipBook_BP.AInFlipBook_BP'";
@@ -135,7 +135,7 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 
 	FString OtonosamaBPPath = "Blueprint'/Game/Working/Shimada/Chara/Otosama/MyOtosama.MyOtosama'";
 	FString TamagoBPPath = "Blueprint'/Game/Working/Shimada/Chara/Otama/MyOtamago.MyOtamago'";
-	
+
 	for (int i = 1; i < BlockBPPathArray.Num(); ++i)
 	{
 		ConstructorHelpers::FObjectFinder<UBlueprint> BluePrintFile(*BlockBPPathArray[i]);
@@ -210,7 +210,7 @@ void AGameManager::BeginPlay()
 	Super::BeginPlay();
 
 	instance = this;
-	
+
 	//	ストリングテーブルからステージデータを読み込む
 	if (m_pStringTable)
 	{
@@ -258,95 +258,96 @@ void AGameManager::BeginPlay()
 					z = height - (row * BLOCK_SIZE + BLOCK_SIZE * 0.5f);
 					switch (blockID_)
 					{
-						case (int)EBlockType::EEmpty:
-							break;
-						case (int)EBlockType::EStart:
-						{
-							//APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
-							//APaperFlipbookActor* actInWater_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaInWaterRef, FVector(x, y+5, z), FRotator(0, 0, 0));
-							AOtosama* actBP_ = GetWorld()->SpawnActor<AOtosama>(m_TonosamaBPRef, FVector(x, y + 5, z), FRotator(0, 0, 0));
-							ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
-							if (/*act_ && actInWater_ &&*/actBP_ && waterBlock_)
-							{
-								//	スタートの情報を保持
-								m_StartBlock.col = col;
-								m_StartBlock.row = row;
-								//m_StartBlock.Tonosama = act_;
-								m_StartBlock.TonosamaBP = actBP_;
-								//act_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
-								actBP_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
-								actBP_->SetActorLocation(FVector(x, y + 5, z));
-								//m_StartBlock.TonosamaInWater = actInWater_;
-								//actInWater_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
-								//actInWater_->SetActorHiddenInGame(true);
-								m_StartBlock.WaterBlock = waterBlock_;
-								waterBlock_->SetMovePossibility(false);
-								waterBlock_->SetActorHiddenInGame(true);
-							}
-						}
+					case (int)EBlockType::EEmpty:
 						break;
-						case (int)EBlockType::EGoal:
+					case (int)EBlockType::EStart:
+					{
+						//APaperFlipbookActor* act_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+						//APaperFlipbookActor* actInWater_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TonosamaInWaterRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+						AOtosama* actBP_ = GetWorld()->SpawnActor<AOtosama>(m_TonosamaBPRef, FVector(x, y + 5, z), FRotator(0, 0, 0));
+						PPos = FVector(x, y + 5, z);
+						ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
+						if (/*act_ && actInWater_ &&*/actBP_ && waterBlock_)
 						{
-							//APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y+5, z), FRotator(0, 0, 0));
-							//APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
-							AOtamago* actBP_ = GetWorld()->SpawnActor<AOtamago>(m_TamagoBPRef, FVector(x, y + 5, z), FRotator(0, 0, 0));
-							actBP_->SetActorLocation(FVector(x, y + 5, z), false, nullptr, ETeleportType::TeleportPhysics);
-							ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
-							if (/*tamago_ && otama_ &&*/actBP_ && waterBlock_)
-							{
-								//	ゴールの情報を保持
-								m_iGoalNum++;
-								FBlockInfo bInfo;
-								bInfo.col = col; bInfo.row = row;
-								bInfo.TamagoBP = actBP_;
-								actBP_->SetActorScale3D(FVector(0.7f, 1, 0.7f));
-								//bInfo.Tamago = tamago_;
-								//bInfo.Otama = otama_;
-								//bInfo.Otama->SetActorHiddenInGame(true);
-								bInfo.WaterBlock = waterBlock_;
-								waterBlock_->SetMovePossibility(false);
-								waterBlock_->SetActorHiddenInGame(false);
-								m_GoalBlockArray.Emplace(bInfo);
-								UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
-							}
+							//	スタートの情報を保持
+							m_StartBlock.col = col;
+							m_StartBlock.row = row;
+							//m_StartBlock.Tonosama = act_;
+							m_StartBlock.TonosamaBP = actBP_;
+							//act_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
+							actBP_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
+							actBP_->SetActorLocation(FVector(x, y + 5, z));
+							//m_StartBlock.TonosamaInWater = actInWater_;
+							//actInWater_->SetActorScale3D(FVector(0.5f, 1, 0.5f));
+							//actInWater_->SetActorHiddenInGame(true);
+							m_StartBlock.WaterBlock = waterBlock_;
+							waterBlock_->SetMovePossibility(false);
+							waterBlock_->SetActorHiddenInGame(true);
 						}
-						break;
-						case (int)EBlockType::EWaterWall:
+					}
+					break;
+					case (int)EBlockType::EGoal:
+					{
+						//APaperFlipbookActor* tamago_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_TamagoRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+						//APaperFlipbookActor* otama_ = GetWorld()->SpawnActor<APaperFlipbookActor>(m_OtamaRef, FVector(x, y+5, z), FRotator(0, 0, 0));
+						AOtamago* actBP_ = GetWorld()->SpawnActor<AOtamago>(m_TamagoBPRef, FVector(x, y + 5, z), FRotator(0, 0, 0));
+						actBP_->SetActorLocation(FVector(x, y + 5, z), false, nullptr, ETeleportType::TeleportPhysics);
+						ASuperBlock* waterBlock_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
+						if (/*tamago_ && otama_ &&*/actBP_ && waterBlock_)
 						{
-							ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
-							if (block_)
-							{
-								m_BlockArray[i] = block_;
-								block_->SetPosition(col, row);
-								block_->SetParent(this);
-								block_->SetMoveInfo(L' ');
-							}
+							//	ゴールの情報を保持
+							m_iGoalNum++;
+							FBlockInfo bInfo;
+							bInfo.col = col; bInfo.row = row;
+							bInfo.TamagoBP = actBP_;
+							actBP_->SetActorScale3D(FVector(0.7f, 1, 0.7f));
+							//bInfo.Tamago = tamago_;
+							//bInfo.Otama = otama_;
+							//bInfo.Otama->SetActorHiddenInGame(true);
+							bInfo.WaterBlock = waterBlock_;
+							waterBlock_->SetMovePossibility(false);
+							waterBlock_->SetActorHiddenInGame(false);
+							m_GoalBlockArray.Emplace(bInfo);
+							UE_LOG(LogTemp, Warning, TEXT("goal col:%d, row:%d"), col, row);
 						}
-						break;
-						case (int)EBlockType::EStone:
+					}
+					break;
+					case (int)EBlockType::EWaterWall:
+					{
+						ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EWater], FVector(x, y, z), FRotator(0, 0, 0));
+						if (block_)
 						{
-							ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EStone], FVector(x, y, z), FRotator(0, 0, 0));
-							if (block_)
-							{
-								m_BlockArray[i] = block_;
-								block_->SetPosition(col, row);
-								block_->SetParent(this);
-								block_->SetMoveInfo(*(wchar_ + 1));
-							}
+							m_BlockArray[i] = block_;
+							block_->SetPosition(col, row);
+							block_->SetParent(this);
+							block_->SetMoveInfo(L' ');
 						}
-						break;
-						default:
+					}
+					break;
+					case (int)EBlockType::EStone:
+					{
+						ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[(int)EBlockType::EStone], FVector(x, y, z), FRotator(0, 0, 0));
+						if (block_)
 						{
-							ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
-							if (block_)
-							{
-								m_BlockArray[i] = block_;
-								block_->SetPosition(col, row);
-								block_->SetParent(this);
-								block_->SetMoveInfo(*(wchar_ + 1));
-							}
+							m_BlockArray[i] = block_;
+							block_->SetPosition(col, row);
+							block_->SetParent(this);
+							block_->SetMoveInfo(*(wchar_ + 1));
 						}
-						break;
+					}
+					break;
+					default:
+					{
+						ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
+						if (block_)
+						{
+							m_BlockArray[i] = block_;
+							block_->SetPosition(col, row);
+							block_->SetParent(this);
+							block_->SetMoveInfo(*(wchar_ + 1));
+						}
+					}
+					break;
 					}
 					//ASuperBlock* block_ = GetWorld()->SpawnActor<ASuperBlock>(m_BlocksRefArray[blockID_], FVector(x, y, z), FRotator(0, 0, 0));
 					//if (block_)
@@ -465,7 +466,7 @@ void AGameManager::BeginPlay()
 	//		}
 	//	}
 	//}
-	
+
 	//	ワールド内のカメラを検索して配置
 	TSubclassOf<ACameraActor> findClass;
 	findClass = ACameraActor::StaticClass();
@@ -510,6 +511,7 @@ void AGameManager::BeginPlay()
 	//	トノサマと水ブロックが隣接しているかチェック
 	//CheckWaterBlockAroundTonosama();
 
+	m_StartBlock.TonosamaBP->SetTonoPos(PPos, m_StartBlock.bInWater);
 
 	UE_LOG(LogTemp, Warning, TEXT("GameManager Finish BeginPlay()."));
 }
@@ -682,7 +684,7 @@ void AGameManager::SetStageStatus(int col, int row, EBlockType bt)
 		if (current_ == (int)EBlockType::EStart)
 		{
 			m_StageArray[index_] = (int)EBlockType::EStartWithWater;
-			
+
 			ChangeOtonosamaState(true);
 		}
 		else if (current_ == (int)EBlockType::EStartWithWater)
@@ -796,7 +798,7 @@ void AGameManager::CheckClear()
 //-------------------------------------------------------------
 bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 {
-	if (x < 0 || x > m_iCol-1 || y < 0 || y > m_iRow-1 || map[x + m_iCol * y] != 0)
+	if (x < 0 || x > m_iCol - 1 || y < 0 || y > m_iRow - 1 || map[x + m_iCol * y] != 0)
 		return false;
 
 	if (m_StageArray[x + m_iCol * y] == (int)EBlockType::EStartWithWater || m_StageArray[x + m_iCol * y] == ((int)EBlockType::EWater | (int)EBlockType::EWithinSong) || m_StageArray[x + m_iCol * y] == ((int)EBlockType::EWaterWall | (int)EBlockType::EWithinSong))
@@ -804,8 +806,8 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 
 	if (!bFirstCheck)
 	{
-	if ((m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWater && (m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWaterWall)
-		return false;
+		if ((m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWater && (m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWaterWall)
+			return false;
 	}
 
 
@@ -819,7 +821,7 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 		return true;
 	if (CheckBlock(x, y - 1, map, false))
 		return true;
-		
+
 	return false;
 }
 
@@ -993,13 +995,13 @@ void AGameManager::ChangeBlockStateWithinSong(bool bOn)
 
 		if (centerY_ - 1 >= 0)
 		{
-			if (centerX_ > 0 && centerX_ < m_iCol-1)
+			if (centerX_ > 0 && centerX_ < m_iCol - 1)
 			{
 				m_StageArray[centerX_ - 1 + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
 				m_StageArray[centerX_ + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
 				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
 			}
-			else if(centerX_ == 0)
+			else if (centerX_ == 0)
 			{
 				m_StageArray[centerX_ + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
 				m_StageArray[centerX_ + 1 + m_iCol * (centerY_ - 1)] |= (int)EBlockType::EWithinSong;
@@ -1160,7 +1162,7 @@ void AGameManager::CheckWaterBlockAroundTonosama()
 	int waterID_ = (int)EBlockType::EWater;
 	bool bWaterBlock = false;
 
-	
+
 	if (col_ - 1 >= 0)
 	{
 		if (waterID_ == GetStageStatus(col_ - 1, row_))
@@ -1179,7 +1181,7 @@ void AGameManager::CheckWaterBlockAroundTonosama()
 	}
 	if (row_ - 1 >= 0)
 	{
-		if (waterID_ == GetStageStatus(col_, row_-1))
+		if (waterID_ == GetStageStatus(col_, row_ - 1))
 		{
 			bWaterBlock = true;
 			goto RESULT;
@@ -1195,7 +1197,7 @@ void AGameManager::CheckWaterBlockAroundTonosama()
 	}
 
 
-	RESULT:
+RESULT:
 	if (bWaterBlock)
 	{
 		ChangeOtonosamaState(true);
@@ -1297,7 +1299,7 @@ void AGameManager::InitAreaDisplaySprites()
 			ad_.pAreaSprite = GetWorld()->SpawnActor<APaperSpriteActor>(m_AreaSpriteBPRef, FVector(centerWorldX_ + BLOCK_SIZE, 59, centerWorldZ_ + BLOCK_SIZE), FRotator(0, 0, 0));
 			ad_.nLayer = 1;
 			m_AreaDisplaySprites.Emplace(ad_);
-			
+
 		}
 		else if (centerX_ == 0)
 		{

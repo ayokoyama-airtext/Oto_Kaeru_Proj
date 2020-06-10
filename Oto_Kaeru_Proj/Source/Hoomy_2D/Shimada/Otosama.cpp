@@ -13,7 +13,7 @@
 #include "Yokoyama/MyAudioManager.h"
 
 
-AOtosama::AOtosama() : nOtsamaPattern(1), nCount(0)
+AOtosama::AOtosama() : nOtsamaPattern(1), nCount(-1), bWaterFlag(false)
 {
 
 	// もし移動させるときヨーが移動しないように
@@ -50,16 +50,14 @@ void AOtosama::UpdateAnimation()
 	//const FVector PlayerVelocity = GetVelocity();
 	//const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
 
-	// 状態をカエル
-	UPaperFlipbook* DesiredAnimation = (nOtsamaPattern > 0) ? NotSwimmingAnimation : SwimmingAnimation;
-	if (GetSprite()->GetFlipbook() != DesiredAnimation)
-	{
-		GetSprite()->SetFlipbook(DesiredAnimation);
-	}
+	//// 状態をカエル
+	//UPaperFlipbook* DesiredAnimation = (nOtsamaPattern > 0) ? NotSwimmingAnimation : SwimmingAnimation;
+	//if (GetSprite()->GetFlipbook() != DesiredAnimation)
+	//{
+	//	GetSprite()->SetFlipbook(DesiredAnimation);
+	//}
 
-	if ((nCount % 100 == 0) && (nOtsamaPattern == 1)) {
-		AMyAudioManager::PlaySE(ESEID::EClickSE);
-	}
+
 }
 
 /*
@@ -69,23 +67,37 @@ void AOtosama::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// 最初のティックでのみ呼ばれる
+	if (!bWaterFlag && nCount == -1)
+		AMyEffectManager::SpawnLoopParticleEmitter(EParticleID::EOnp, Otolocation, FRotator::ZeroRotator);
+
+	if ((nCount % 100 == 0) && (nOtsamaPattern == 1)) {
+		AMyAudioManager::PlaySE(ESEID::EClickSE);
+	}
+
+	nCount++;
+
 	//UpdateCharacter();
 }
 
 void AOtosama::InWater()
 {
+	AMyEffectManager::DestroyLoopParticleEmitters();
 	GetSprite()->SetFlipbook(SwimmingAnimation);
+	UE_LOG(LogTemp, Warning, TEXT("Inwater"));
 }
 
 void AOtosama::OutWater()
 {
+	AMyEffectManager::SpawnLoopParticleEmitter(EParticleID::EOnp, Otolocation, FRotator::ZeroRotator);
 	GetSprite()->SetFlipbook(NotSwimmingAnimation);
 }
 
-void AOtosama::SetTonoPos(FVector location)
+void AOtosama::SetTonoPos(FVector location, bool bWater)
 {
 	Otolocation = location;
-	AMyEffectManager::SpawnLoopParticleEmitter(EParticleID::EOnp, Otolocation, FRotator::ZeroRotator);
+	bWaterFlag = bWater;
+	UE_LOG(LogTemp, Warning, TEXT("SetPos"));
 }
 
 void AOtosama::UpdateCharacter()
