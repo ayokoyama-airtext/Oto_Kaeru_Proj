@@ -881,7 +881,7 @@ bool AGameManager::CheckBlock(int x, int y, int *map, bool bFirstCheck)
 
 	if (!bFirstCheck)
 	{
-		if ((m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWater && (m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWaterWall)
+		if ((m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWater && (m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EWaterWall && (m_StageArray[x + m_iCol * y] & 0x0f) != (int)EBlockType::EGoal)
 			return false;
 	}
 
