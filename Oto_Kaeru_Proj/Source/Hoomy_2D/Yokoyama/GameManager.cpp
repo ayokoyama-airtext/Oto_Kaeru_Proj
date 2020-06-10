@@ -35,7 +35,7 @@ AGameManager* AGameManager::instance = nullptr;
 // Desc: Ctor
 //-------------------------------------------------------------
 AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
-	:AActor(ObjectInitializer), m_iCol(0), m_iRow(0), m_bBlockMoving(false), m_bOpeningEnd(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0), m_iEndingPhase(0), m_fBreathingTimer(0), m_fTimer(0)
+	:AActor(ObjectInitializer), m_iCol(0), m_iRow(0), m_bBlockMoving(false), m_bOpeningEnd(false), m_iGoalNum(0), m_iClearedGoalNum(0), m_bClearStage(false), m_bGameOver(false), m_iClickCount(0), m_iMaxClickNum(0), m_iEndingPhase(0), m_fBreathingTimer(0), m_fTimer(0), m_bFirst(true)
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -615,6 +615,12 @@ void AGameManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (m_bFirst)
+	{
+		AMyAudioManager::PlayBGM(EBGMID::EBGM01);
+		m_bFirst = false;
+	}
+
 	//	クリア&ゲームオーバーチェック
 	if (!m_bClearStage && !m_bGameOver)
 	{
@@ -679,6 +685,7 @@ void AGameManager::Tick(float DeltaTime)
 		switch (m_iEndingPhase)
 		{
 		case 0:
+			AMyAudioManager::FadeOutBGM(0.25f);
 			AMyAudioManager::PlaySE(ESEID::EGameOverSE, 1, 1);
 			m_iEndingPhase = 1;
 			break;

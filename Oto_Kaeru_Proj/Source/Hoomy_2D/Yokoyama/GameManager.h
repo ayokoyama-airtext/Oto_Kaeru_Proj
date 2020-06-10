@@ -284,4 +284,5 @@ protected:
 		TSubclassOf<class APaperSpriteActor>	m_AreaSpriteBPRef;			//	範囲表示用BPアセットへの参照
 	float	m_fBreathingTimer;		//	範囲表示点滅用タイマー
 
+	bool	m_bFirst;
 };
