@@ -43,10 +43,10 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 
 	//	スポーンさせるためにブロックBPの参照を取りに行く
 	m_BlocksRefArray.Init(nullptr, (uint8)EBlockType::EMax);
-#if UE_GAME
+//#if UE_GAME
 	//	ランタイム
 	//	ブロック
-	TArray<FString>	BlockBPPathArray = { "",
+	/*TArray<FString>	BlockBPPathArray = { "",
 										"/Game/Working/Yokoyama/BP/WallBlockBP",
 										"/Game/Working/Yokoyama/BP/WaterBlockBP",
 	};
@@ -117,12 +117,12 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 		{
 			m_TamagoBPRef = (UClass*)BluePrintFile.Class;
 		}
-	}
+	}*/
 
-#else
+//#else
 	//	エディター
 	//	ブロック
-	TArray<FString>	BlockBPPathArray = { "",
+	/*TArray<FString>	BlockBPPathArray = { "",
 										"Blueprint'/Game/Working/Yokoyama/BP/WallBlockBP.WallBlockBP'",
 										"Blueprint'/Game/Working/Yokoyama/BP/WaterBlockBP.WaterBlockBP'",
 	};
@@ -195,8 +195,83 @@ AGameManager::AGameManager(const FObjectInitializer& ObjectInitializer)
 		{
 			m_TamagoBPRef = (UClass*)BluePrintFile.Object->GeneratedClass;
 		}
+	}*/
+
+	TArray<FString>	BlockBPPathArray = { "",
+											"/Game/Working/Yokoyama/BP/WallBlockBP.WallBlockBP_C",
+											"/Game/Working/Yokoyama/BP/WaterBlockBP.WaterBlockBP_C",
+	};
+	FString	StoneBlockBPPath = "/Game/Working/Yokoyama/BP/StoneBlockBP.StoneBlockBP_C";
+	FString TonosamaPath = "/Game/Working/Yokoyama/BP/ANotInFlipBook_BP.ANotInFlipBook_BP_C";
+	FString TonosamaInWaterPath = "/Game/Working/Yokoyama/BP/AInFlipBook_BP.AInFlipBook_BP_C";
+
+	FString TamagoPath = "/Game/Working/Yokoyama/BP/TamagoFlipbook_BP.TamagoFlipbook_BP_C";
+	FString OtamaPath = "/Game/Working/Yokoyama/BP/OtamaFlipbook_BP.OtamaFlipbook_BP_C";
+
+	FString OtonosamaBPPath = "/Game/Working/Shimada/Chara/Otosama/MyOtosama.MyOtosama_C";
+	FString TamagoBPPath = "/Game/Working/Shimada/Chara/Otama/MyOtamago.MyOtamago_C";
+
+	for (int i = 1; i < BlockBPPathArray.Num(); ++i)
+	{
+		ConstructorHelpers::FObjectFinder<UClass> BluePrintFile(*BlockBPPathArray[i]);
+		if (BluePrintFile.Object)
+		{
+			m_BlocksRefArray[i] = (UClass*)BluePrintFile.Object;
+		}
 	}
-#endif
+	{
+		ConstructorHelpers::FObjectFinder<UClass>	BPFile(*StoneBlockBPPath);
+		if (BPFile.Object)
+		{
+			m_BlocksRefArray[(int)EBlockType::EStone] = (UClass*)BPFile.Object;
+		}
+	}
+
+	{
+		ConstructorHelpers::FObjectFinder<UClass> BluePrintFile(*TonosamaPath);
+		if (BluePrintFile.Object)
+		{
+			m_TonosamaRef = (UClass*)BluePrintFile.Object;
+		}
+	}
+	{
+		ConstructorHelpers::FObjectFinder<UClass> BluePrintFile(*TonosamaInWaterPath);
+		if (BluePrintFile.Object)
+		{
+			m_TonosamaInWaterRef = (UClass*)BluePrintFile.Object;
+		}
+	}
+
+	{
+		ConstructorHelpers::FObjectFinder<UClass> BluePrintFile(*TamagoPath);
+		if (BluePrintFile.Object)
+		{
+			m_TamagoRef = (UClass*)BluePrintFile.Object;
+		}
+	}
+	{
+		ConstructorHelpers::FObjectFinder<UClass> BluePrintFile(*OtamaPath);
+		if (BluePrintFile.Object)
+		{
+			m_OtamaRef = (UClass*)BluePrintFile.Object;
+		}
+	}
+
+	{
+		ConstructorHelpers::FObjectFinder<UClass> BluePrintFile(*OtonosamaBPPath);
+		if (BluePrintFile.Object)
+		{
+			m_TonosamaBPRef = (UClass*)BluePrintFile.Object;
+		}
+	}
+	{
+		ConstructorHelpers::FObjectFinder<UClass> BluePrintFile(*TamagoBPPath);
+		if (BluePrintFile.Object)
+		{
+			m_TamagoBPRef = (UClass*)BluePrintFile.Object;
+		}
+	}
+//#endif
 }
 
 
