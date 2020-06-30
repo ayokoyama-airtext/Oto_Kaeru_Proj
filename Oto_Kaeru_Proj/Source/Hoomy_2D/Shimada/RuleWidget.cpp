@@ -1,6 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
+/**
+* @file		Rulewidget.cpp
+* @brief	ルールシーン.cpp
+* @author	yshimada
+* @data		20200505
+*/
 #include "RuleWidget.h"
 #include "Components/Image.h"
 #include "Components/Button.h"
@@ -13,9 +16,11 @@
 
 
 
-// コンストラクタ
+/**
+* @brief コンストラクタ
+*/
 URuleWidget::URuleWidget(const FObjectInitializer& ObjectInitializer)
-	:Super(ObjectInitializer), bClickFlag(false), ButtonNum(0), bEndFlag(false), PanelPosX(0), PanelPosY(0), bFadeFlag(true), bInFade(true), fAlpha(1.0)
+	: Super(ObjectInitializer), bClickFlag(false), ButtonNum(0), bEndFlag(false), PanelPosX(0), PanelPosY(0), bFadeFlag(true), bInFade(true), fAlpha(1.0)
 {
 	m_pCButton = Prev;
 
@@ -66,7 +71,9 @@ URuleWidget::URuleWidget(const FObjectInitializer& ObjectInitializer)
 //*********************************************************
 // 初期化処理
 
-// 生成時
+/**
+* @brief 生成時
+*/
 void URuleWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
@@ -102,26 +109,35 @@ void URuleWidget::NativeOnInitialized()
 		*/
 }
 
-// 開始前
+/**
+* @brief 開始前
+*/
 void URuleWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 
 }
 
-// 出現時
+/**
+* @brief 出現時
+*/
 void URuleWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 }
 
-// 修了
+/**
+* @brief デストラクタ
+*/
 void URuleWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 }
 
+/**
+* @brief 毎フレーム呼ばれる
+*/
 void URuleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
@@ -172,6 +188,9 @@ void URuleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 }
 
+/**
+* @brief クリック判定
+*/
 void URuleWidget::ChangeClick()
 {
 	bClickFlag = true;
@@ -186,6 +205,9 @@ void URuleWidget::ChangeClick()
 		m_pCButton = Next;
 }
 
+/**
+* @brief イメージの移動
+*/
 void URuleWidget::MoveAnim()
 {
 	UE_LOG(LogTemp, Log, TEXT("MoveAnim"));
@@ -219,11 +241,17 @@ void URuleWidget::MoveAnim()
 
 }
 
+/**
+* @brief 次のシーン
+*/
 void URuleWidget::EndLevel()
 {
 	UGameplayStatics::OpenLevel(this, TEXT("/Game/Working/Shimada/Map/Title"));
 }
 
+/**
+* @brief 移動完了
+*/
 void URuleWidget::TrueFlag()
 {
 	UE_LOG(LogTemp, Log, TEXT("入った"));
@@ -238,6 +266,9 @@ void URuleWidget::TrueFlag()
 	bInFade = true;
 }
 
+/**
+* @brief 薄くなる
+*/
 bool URuleWidget::ChangeAlpha(UImage* Image, bool FadeFlag)
 {
 	if (FadeFlag) {

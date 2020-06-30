@@ -1,5 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+/**
+* @file		Otamago.h
+* @brief	オタマジャクシ.h
+* @author	yshimada
+* @data		20200420
+*/
 #pragma once
 
 #include "CoreMinimal.h"
@@ -15,7 +19,7 @@ UCLASS(Config = Game)
 class HOOMY_2D_API AOtamago : public APaperCharacter
 {
 	GENERATED_BODY()
-	
+
 		UTextRenderComponent* TextComponent;
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -37,7 +41,7 @@ public:
 	AOtamago();
 
 	UPROPERTY(VisibleAnywhere)
-	int nOtamaPattern;
+		int nOtamaPattern;
 
 	// 水ブロックに入った時
 	void Otama();

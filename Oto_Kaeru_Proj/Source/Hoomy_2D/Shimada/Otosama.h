@@ -1,5 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+/**
+* @file		Otosama.h
+* @brief	‰¹‚Ì‚³‚Ü.h
+* @author	yshimada
+* @data		20200420
+*/
 #pragma once
 
 #include "CoreMinimal.h"

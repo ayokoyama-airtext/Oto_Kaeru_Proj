@@ -1,6 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
+/**
+* @file		Otamago.cpp
+* @brief	オタマジャクシ.cpp
+* @author	yshimada
+* @data		20200420
+*/
 #include "Otamago.h"
 #include "PaperFlipbookComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -9,6 +12,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 
+/*********************
+* @brief コンストラクタ
+*********************/
 AOtamago::AOtamago() : nOtamaPattern(1)
 {
 	// もし移動させるときヨーが移動しないように
@@ -40,6 +46,9 @@ AOtamago::AOtamago() : nOtamaPattern(1)
 	GetSprite()->SetFlipbook(OtamagoAnimation);
 }
 
+/*********************
+* @brief アップデート
+*********************/
 void AOtamago::UpdateAnimation()
 {
 	//const FVector PlayerVelocity = GetVelocity();
@@ -54,9 +63,9 @@ void AOtamago::UpdateAnimation()
 
 }
 
-/*
+/*********************
 * @brief 毎フレーム処理
-*/
+*********************/
 void AOtamago::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -64,12 +73,18 @@ void AOtamago::Tick(float DeltaSeconds)
 	//UpdateCharacter();
 }
 
+/*
+* @brief オタマジャクシにする
+*/
 void AOtamago::Otama()
 {
 	GetSprite()->SetFlipbook(OtamaAnimation);
 
 }
 
+/**
+* @brief キャラ変更呼び出し
+*/
 void AOtamago::UpdateCharacter()
 {
 	//! アニメーション切替

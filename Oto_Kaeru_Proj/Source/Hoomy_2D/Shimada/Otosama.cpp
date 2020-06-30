@@ -1,6 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
+/**
+* @file		Otosama.cpp
+* @brief	音のさま.cpp
+* @author	yshimada
+* @data		20200420
+*/
 #include "Otosama.h"
 #include "PaperFlipbookComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -12,7 +15,9 @@
 #include "Yokoyama/MyEffectManager.h"
 #include "Yokoyama/MyAudioManager.h"
 
-
+/*********************
+* @brief コンストラクタ
+*********************/
 AOtosama::AOtosama() : nOtsamaPattern(1), nCount(-1), bWaterFlag(false)
 {
 
@@ -45,6 +50,9 @@ AOtosama::AOtosama() : nOtsamaPattern(1), nCount(-1), bWaterFlag(false)
 	GetSprite()->SetFlipbook(NotSwimmingAnimation);
 }
 
+/*
+* @brief アニメーションの変更
+*/
 void AOtosama::UpdateAnimation()
 {
 	//const FVector PlayerVelocity = GetVelocity();
@@ -60,9 +68,9 @@ void AOtosama::UpdateAnimation()
 
 }
 
-/*
+/*********************
 * @brief 毎フレーム処理
-*/
+*********************/
 void AOtosama::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -80,6 +88,9 @@ void AOtosama::Tick(float DeltaSeconds)
 	//UpdateCharacter();
 }
 
+/**
+* @brief 水に入った時の処理
+*/
 void AOtosama::InWater()
 {
 	AMyEffectManager::DestroyLoopParticleEmitters();
@@ -87,12 +98,18 @@ void AOtosama::InWater()
 	UE_LOG(LogTemp, Warning, TEXT("Inwater"));
 }
 
+/**
+* @brief 水から出たときの時の処理
+*/
 void AOtosama::OutWater()
 {
 	AMyEffectManager::SpawnLoopParticleEmitter(EParticleID::EOnp, Otolocation, FRotator::ZeroRotator);
 	GetSprite()->SetFlipbook(NotSwimmingAnimation);
 }
 
+/**
+* @brief　エフェクト用ポジションセット
+*/
 void AOtosama::SetTonoPos(FVector location, bool bWater)
 {
 	Otolocation = location;
@@ -100,6 +117,9 @@ void AOtosama::SetTonoPos(FVector location, bool bWater)
 	UE_LOG(LogTemp, Warning, TEXT("SetPos"));
 }
 
+/**
+* @brief アニメーション切替時呼び出し関数
+*/
 void AOtosama::UpdateCharacter()
 {
 	//! アニメーション切替

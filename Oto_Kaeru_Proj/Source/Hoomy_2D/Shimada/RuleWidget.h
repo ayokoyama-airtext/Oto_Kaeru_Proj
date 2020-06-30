@@ -1,5 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+/**
+* @file		Rulewidget.h
+* @brief	ƒ‹[ƒ‹ƒV[ƒ“.h
+* @author	yshimada
+* @data		20200505
+*/
 #pragma once
 
 #include "CoreMinimal.h"
